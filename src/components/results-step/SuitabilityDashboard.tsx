@@ -125,7 +125,7 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({
   } as SuitabilityData;
 
   // Derive notes / risk from result.details when available (best-effort)
-  const detailObj = result?.details as Record<string, any> | undefined;
+  const detailObj = result?.details as Record<string, unknown> | undefined;
   const dynamicNotes: string[] = Array.isArray(detailObj?.notes) ? detailObj!.notes : [];
   const dynamicRisks: string[] = Array.isArray(detailObj?.riskFlags) ? detailObj!.riskFlags : [];
   const notes = dynamicNotes.length ? dynamicNotes : data.notes;
