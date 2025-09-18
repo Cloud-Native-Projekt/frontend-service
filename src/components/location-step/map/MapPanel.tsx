@@ -4,7 +4,7 @@ import { Box, Snackbar, Alert } from "@mui/material";
 import dynamic from "next/dynamic";
 import { Location } from "@/types";
 
-const Map = dynamic(() => import("@/components/Map"), { ssr: false });
+const Map = dynamic(() => import("@/components/location-step/map/Map"), { ssr: false });
 
 interface Props {
   onLocationChange: (loc: Location | null) => void;

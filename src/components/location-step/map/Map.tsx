@@ -5,7 +5,7 @@ import Card from '@mui/material/Card';
 import { MapContainer, Marker, TileLayer, Polygon } from 'react-leaflet';
 import CoordinateMarker from './CoordinateMarker';
 import CardContent from '@mui/material/CardContent';
-import { GERMANY_POLYGON } from '../actions/CoordinateValidation';
+import { GERMANY_POLYGON } from '../../../actions/CoordinateValidation';
 import { divIcon, Point } from 'leaflet';
 import { renderToString } from 'react-dom/server';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';

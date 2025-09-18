@@ -2,8 +2,8 @@
 import React from "react";
 import { Box, Stepper, Step, StepLabel } from "@mui/material";
 import { customThemeVars } from "@/theme";
-import { LocationStep } from "./body/LocationStep";
-import { ResultsStep } from "./body/ResultsStep";
+import { LocationStep } from "./location-step/LocationStep";
+import { ResultsStep } from "./results-step/ResultsStep";
 import { useProjectConfig } from "@/hooks/useProjectConfig";
 import { analyzeProject } from "@/actions/analyzeProject";
 import { AnalysisResult, Location } from "@/types";

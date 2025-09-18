@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import TwitterIcon from '@mui/icons-material/Twitter';
+// Removed unused TwitterIcon import
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import School from '@mui/icons-material/School';
 
@@ -28,12 +28,14 @@ export default function Footer() {
               Empowering sustainable choices with modern design principles.
             </Typography>
           </Box>
-          <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
-            <Link href="#" underline="hover" color="text.primary" variant="body2">Docs</Link>
-            <Link href="#" underline="hover" color="text.primary" variant="body2">API</Link>
-            <Link href="#" underline="hover" color="text.primary" variant="body2">Support</Link>
-            <Link href="#" underline="hover" color="text.primary" variant="body2">Privacy</Link>
-          </Stack>
+          <Box component="nav" aria-label="Footer navigation">
+            <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
+              <Link href="#" underline="hover" color="text.primary" variant="body2">Docs</Link>
+              <Link href="#" underline="hover" color="text.primary" variant="body2">API</Link>
+              <Link href="#" underline="hover" color="text.primary" variant="body2">Support</Link>
+              <Link href="/privacy" underline="hover" color="text.primary" variant="body2">Privacy</Link>
+            </Stack>
+          </Box>
           <Stack direction="row" spacing={1}>
             <IconButton
               color="inherit"

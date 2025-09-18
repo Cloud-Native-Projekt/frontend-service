@@ -6,7 +6,7 @@ import { isInGermany } from '@/actions/CoordinateValidation';
 interface CoordinateMarkerProps {
   onSelect: (latlng: LatLng) => void;
   flyTo?: boolean;
-  onInvalidAttempt?: (lat: number, lng: number) => void; // callback for out-of-Germany clicks
+  onInvalidAttempt?: (lat: number, lng: number) => void;
 }
 
 const CoordinateMarker: React.FC<CoordinateMarkerProps> = ({ onSelect, onInvalidAttempt }) => {

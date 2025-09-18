@@ -2,10 +2,10 @@
 import React from "react";
 import { Stack } from "@mui/material";
 import { customThemeVars } from "@/theme";
-import { MapPanel } from "./MapPanel";
-import { RadiusCard } from "./RadiusCard";
-import { TurbineParamsCard } from "./TurbineParamsCard";
-import { SummaryCard } from "./SummaryCard";
+import { MapPanel } from "./map/MapPanel";
+import { RadiusCard } from "./side-cards/RadiusCard";
+import { TurbineParamsCard } from "./side-cards/TurbineParamsCard";
+import { SummaryCard } from "./side-cards/SummaryCard";
 import { Location } from "@/types";
 
 interface Props {

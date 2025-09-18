@@ -14,17 +14,31 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import { AnalysisResult, Location } from '@/types';
 
 interface SuitabilityData {
   coordinate: { lat: number; lng: number };
   temperature: { min: number; max: number; mean: number };
   windTemp: { min: number; max: number; mean: number };
-  rating: number;
+  rating: number; // fallback rating (overridden by result.score when present)
   distancePowerLine: number;
   distanceDistributionCenter: number;
   allowed: boolean;
   notes: string[];
   riskFlags: string[];
+}
+
+interface SuitabilityDashboardProps {
+  result: AnalysisResult | null;
+  location: Location | null;
+  onReset: () => void;
+  onRecalculate?: () => void;
+  recalculating?: boolean;
+  // Optional custom metrics data (otherwise internal mock is used)
+  dataOverride?: Partial<SuitabilityData>;
 }
 
 // Mock data generator (static for now)
@@ -94,9 +108,65 @@ const RatingGauge: React.FC<{ value: number }> = ({ value }) => (
   </Card>
 );
 
-const SuitabilityDashboard: React.FC<{ data?: SuitabilityData }> = ({ data = mockSuitability }) => {
+const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({
+  result,
+  location,
+  onReset,
+  onRecalculate,
+  recalculating,
+  dataOverride
+}) => {
+  // Merge overrides with mock baseline
+  const data: SuitabilityData = {
+    ...mockSuitability,
+    ...dataOverride,
+    coordinate: location ?? dataOverride?.coordinate ?? mockSuitability.coordinate,
+    rating: result?.score ?? dataOverride?.rating ?? mockSuitability.rating,
+  } as SuitabilityData;
+
+  // Derive notes / risk from result.details when available (best-effort)
+  const detailObj = result?.details as Record<string, any> | undefined;
+  const dynamicNotes: string[] = Array.isArray(detailObj?.notes) ? detailObj!.notes : [];
+  const dynamicRisks: string[] = Array.isArray(detailObj?.riskFlags) ? detailObj!.riskFlags : [];
+  const notes = dynamicNotes.length ? dynamicNotes : data.notes;
+  const riskFlags = dynamicRisks.length ? dynamicRisks : data.riskFlags;
+
   return (
     <Box sx={{ width: '100%', display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' } }}>
+      {/* Summary / Actions (combined original ResultsStep card) */}
+      <Box sx={{ gridColumn: { xs: '1', md: 'span 12' } }}>
+        <Card sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography variant="h6" fontWeight={600}>Analyse-Ergebnis</Typography>
+          {location && (
+            <Typography variant="body2" color="text.secondary">
+              Position: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+            </Typography>
+          )}
+          {result ? (
+            <Typography variant="body2">
+              Score: {result.score} · Zeit: {new Date(result.generatedAt).toLocaleTimeString()}
+            </Typography>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Kein Ergebnis geladen.
+            </Typography>
+          )}
+          <Divider sx={{ my: 1 }} />
+          <Stack direction="row" spacing={1}>
+            <Button variant="contained" onClick={onReset}>Neuer Versuch</Button>
+            {onRecalculate && (
+              <Button
+                variant="outlined"
+                onClick={onRecalculate}
+                disabled={recalculating}
+              >
+                {recalculating ? 'Aktualisiere...' : 'Neu berechnen'}
+              </Button>
+            )}
+          </Stack>
+        </Card>
+      </Box>
+
       <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><RangeStats label="Air Temp" data={data.temperature} unit="°C" /></Box>
       <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><RangeStats label="Wind Temp" data={data.windTemp} unit="°C" /></Box>
       <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><DistanceStat label="Power Line" meters={data.distancePowerLine} /></Box>
@@ -118,7 +188,7 @@ const SuitabilityDashboard: React.FC<{ data?: SuitabilityData }> = ({ data = moc
           <CardHeader title={<Typography variant="overline">Notes</Typography>} sx={{ pb: 0 }} />
           <CardContent sx={{ pt: 1 }}>
             <List dense>
-              {data.notes.map(n => (
+              {notes.map(n => (
                 <ListItem key={n} disablePadding>
                   <ListItemIcon sx={{ minWidth: 32 }}>
                     <CheckCircleIcon color="success" fontSize="small" />
@@ -126,7 +196,7 @@ const SuitabilityDashboard: React.FC<{ data?: SuitabilityData }> = ({ data = moc
                   <ListItemText primary={n} primaryTypographyProps={{ variant: 'body2' }} />
                 </ListItem>
               ))}
-              {data.riskFlags.map(r => (
+              {riskFlags.map(r => (
                 <ListItem key={r} disablePadding>
                   <ListItemIcon sx={{ minWidth: 32 }}>
                     <WarningAmberIcon color="warning" fontSize="small" />
