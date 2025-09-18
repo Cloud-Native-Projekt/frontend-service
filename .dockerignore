@@ -1,0 +1,10 @@
+.git
+.gitignore
+.github
+
+.env
+
+.next
+.vscode
+node_modules
+README.md
