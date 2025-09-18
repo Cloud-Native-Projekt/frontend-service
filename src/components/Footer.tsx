@@ -64,7 +64,7 @@ export default function Footer() {
               size="small"
               aria-label="CAS DHBW Lecture"
               component="a"
-              href="https://elearning.cas.dhbw.de/course/view.php?id=9582"
+              href="https://www.cas.dhbw.de/fileadmin/user_upload/Studium/Wirtschaft/M_W_WI_Modulhandbuch.pdf#page=119"
               target="_blank"
               rel="noopener noreferrer"
             >

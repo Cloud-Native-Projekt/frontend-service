@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       <Header />
       <Container component="main" sx={{ py: { xs: 4, md: 8 }, flexGrow: 1, display: 'flex', alignItems: 'flex-start' }}>
         <Card elevation={3} sx={{ maxWidth: 940, mx: 'auto', width: '100%' }}>
-          <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16 / 7', mb: 2, borderRadius: 3, overflow: 'hidden' }}>
+          <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16 / 7', mb: 2, borderRadius: 2.7, overflow: 'hidden' }}>
             <Image
               src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
               alt="Animiertes Symbol für sehr entschlossenen Datenschutz (Tresor)"
