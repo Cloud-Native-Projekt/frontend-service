@@ -29,9 +29,14 @@ export default function Header() {
       <AppBar position="sticky" color="primary" enableColorOnDark>
         <Toolbar sx={{ gap: 2 }}>
           <WindPowerRoundedIcon color='secondary' fontSize='large' />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            My App
-          </Typography>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h5" component="div">
+              GreenGridGuide
+            </Typography>
+            <Typography variant="h5" component="div" sx={{ display: { xs: 'none', sm: 'flex' }, fontSize: 21 }}>
+              – Wind & Solar Potential Explorer
+            </Typography>
+          </Box>
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
             <Button color="inherit">Features</Button>
             <Button color="inherit">Pricing</Button>

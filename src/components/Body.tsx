@@ -30,7 +30,7 @@ export default function Body() {
   const [invalidClick, setInvalidClick] = React.useState<{ lat: number; lng: number } | null>(null);
 
   // Suchradius + konfigurierbares Maximum
-  const [searchRadiusKm, setSearchRadiusKm] = React.useState<number>(20);
+  const [searchRadiusKm, setSearchRadiusKm] = React.useState<number>(1);
 
   // Weitere sinnvolle Auswahl: Turbinen-Hubhöhe (wirkt später auf Ertragsmodell)
   const [hubHeight, setHubHeight] = React.useState<number>(120);
@@ -49,9 +49,10 @@ export default function Body() {
     <Box
       sx={{
         margin: { xs: customThemeVars.body.margin.mobile, sm: customThemeVars.body.margin.desktop },
-        padding: { xs: customThemeVars.body.padding.mobile, sm: customThemeVars.body.padding.desktop },
-        paddingTop: 0,
-        paddingBotttom: 0,
+        padding: {
+          xs: `0 ${customThemeVars.body.padding.mobile}`,
+          sm: `0 ${customThemeVars.body.padding.desktop}`,
+        },
         flex: 1,
         display: "flex",
         flexDirection: "column",
@@ -124,9 +125,9 @@ export default function Body() {
                 <FormLabel sx={{ mb: 1, display: "block" }}>Aktueller Radius: {searchRadiusKm} km</FormLabel>
                 <Slider
                   value={searchRadiusKm}
-                  min={10}
-                  step={10}
-                  max={50000}
+                  min={1}
+                  step={1}
+                  max={5}
                   valueLabelDisplay="auto"
                   onChange={(_, v) => setSearchRadiusKm(v as number)}
                 />
@@ -184,7 +185,7 @@ export default function Body() {
                   : "Keine Position gewählt."}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Radius: {searchRadiusKm} m · Hubhöhe: {hubHeight} m
+                Radius: {searchRadiusKm} km · Hubhöhe: {hubHeight} m
               </Typography>
 
               <Box sx={{ flexGrow: 1 }} />
