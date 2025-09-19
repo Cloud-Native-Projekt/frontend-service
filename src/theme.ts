@@ -37,6 +37,66 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          borderRadius: 28,
+          border: `1px solid ${customSurfaceVariant}`,
+          background: customSurface,
+          boxShadow: theme.shadows[8],
+        }),
+      },
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: customThemeVars.body.padding.mobile,
+          [theme.breakpoints.up('sm')]: {
+            padding: customThemeVars.body.padding.desktop,
+          },
+        }),
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: customThemeVars.body.innerMargin.mobile,
+          [theme.breakpoints.up('sm')]: {
+            padding: customThemeVars.body.innerMargin.desktop,
+          },
+        }),
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: customThemeVars.body.padding.mobile,
+          [theme.breakpoints.up('sm')]: {
+            padding: customThemeVars.body.padding.desktop,
+          },
+        }),
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          height: 6,
+          borderRadius: 6,
+          backgroundColor: theme.palette.action.hover,
+          overflow: 'hidden',
+        }),
+        bar: {
+          borderRadius: 6,
+        },
+      },
+    },
+    MuiCircularProgress: {
+      styleOverrides: {
+        root: () => ({
+          '& .MuiCircularProgress-circle': { strokeLinecap: 'round' },
+        }),
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: ({ theme }) => ({

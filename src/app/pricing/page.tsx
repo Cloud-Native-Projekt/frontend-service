@@ -23,6 +23,7 @@ import RadioButtonUncheckedRounded from '@mui/icons-material/RadioButtonUnchecke
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { customThemeVars } from '@/theme';
 import Link from 'next/link';
+import ProAcquireCta from './components/ProAcquireCta';
 
 export const metadata: Metadata = {
   title: 'Pricing • GreenGridGuide',
@@ -86,7 +87,7 @@ const plans: Plan[] = [
     description: 'Große Datentiefe, Compliance & Integrationen.',
     ctaLabel: 'Mit Vertrieb sprechen',
     tierNote: 'Individuell',
-    reference: '/'
+    reference: 'mailto:sales@greengrid.guide?subject=Enterprise%20Plan%20Anfrage&body=Hallo%20GreenGridGuide%20Vertrieb,%0A%0AIch%20interessiere%20mich%20für%20den%20Enterprise%20Plan.%20Bitte%20kontaktieren%20Sie%20mich%20für%20weitere%20Informationen.%0A%0AVielen%20Dank!'
   },
 ];
 
@@ -131,7 +132,6 @@ const featureGroups: FeatureGroup[] = [
   },
 ];
 
-// Werte-Matrix planId -> featureKey -> value
 const featureMatrix: Record<string, Record<string, FeatureValue>> = {
   free: {
     geoScope: 'Deutschland',
@@ -223,7 +223,17 @@ export default function PricingPage() {
                         <Typography variant="caption" color="text.secondary">{plan.tierNote}</Typography>
                       )}
                     </Box>
-                    <Button variant={plan.isPopular ? 'contained' : 'outlined'} component={Link} href={plan.reference} fullWidth>{plan.ctaLabel}</Button>
+                    {plan.id === 'pro' ? (
+                      <ProAcquireCta
+                        variant={plan.isPopular ? 'contained' : 'outlined'}
+                        label={plan.ctaLabel}
+                        fullWidth
+                      />
+                    ) : (
+                      <Button variant={plan.isPopular ? 'contained' : 'outlined'} component={Link} href={plan.reference} fullWidth>
+                        {plan.ctaLabel}
+                      </Button>
+                    )}
                   </Stack>
                 </CardContent>
               </Card>
@@ -278,7 +288,8 @@ export default function PricingPage() {
               <Typography variant="h6" fontWeight={600}>Individuelle Anforderungen?</Typography>
               <Typography variant="body2" color="text.secondary">Kontaktiere uns für maßgeschneiderte Integrationen, größere Nutzerzahlen oder spezielle Compliance-Anforderungen.</Typography>
               <Box>
-                <Button variant="contained">Kontakt aufnehmen</Button>
+                <Button href='https://github.com/Cloud-Native-Projekt/frontend-service/issues/' target="_blank"
+                  rel="noopener noreferrer" variant="contained">Kontakt aufnehmen</Button>
               </Box>
             </Stack>
           </Card>
