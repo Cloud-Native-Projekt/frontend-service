@@ -18,11 +18,11 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import RadioButtonUncheckedRounded from '@mui/icons-material/RadioButtonUncheckedRounded';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { customThemeVars } from '@/theme';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Pricing • GreenGridGuide',
@@ -41,6 +41,7 @@ interface Plan {
   ctaLabel: string;
   tierNote?: string;
   meta?: Record<string, unknown>;
+  reference: string;
 }
 
 interface FeatureDef {
@@ -63,8 +64,9 @@ const plans: Plan[] = [
     price: '€0',
     period: '/Monat',
     description: 'Ideal für ersten Einstieg. Fokus: Deutschland.',
-    ctaLabel: 'Kostenlos starten',
+    ctaLabel: 'Kostenlos weitermachen',
     tierNote: 'Nur DE-Daten',
+    reference: '/'
   },
   {
     id: 'pro',
@@ -75,6 +77,7 @@ const plans: Plan[] = [
     ctaLabel: 'Pro aktivieren',
     isPopular: true,
     tierNote: 'Beliebtester Plan',
+    reference: '/'
   },
   {
     id: 'enterprise',
@@ -83,6 +86,7 @@ const plans: Plan[] = [
     description: 'Große Datentiefe, Compliance & Integrationen.',
     ctaLabel: 'Mit Vertrieb sprechen',
     tierNote: 'Individuell',
+    reference: '/'
   },
 ];
 
@@ -219,7 +223,7 @@ export default function PricingPage() {
                         <Typography variant="caption" color="text.secondary">{plan.tierNote}</Typography>
                       )}
                     </Box>
-                    <Button variant={plan.isPopular ? 'contained' : 'outlined'} fullWidth>{plan.ctaLabel}</Button>
+                    <Button variant={plan.isPopular ? 'contained' : 'outlined'} component={Link} href={plan.reference} fullWidth>{plan.ctaLabel}</Button>
                   </Stack>
                 </CardContent>
               </Card>

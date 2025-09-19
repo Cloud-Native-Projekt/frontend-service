@@ -8,7 +8,6 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
-// Removed unused TwitterIcon import
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import School from '@mui/icons-material/School';
 
@@ -30,9 +29,9 @@ export default function Footer() {
           </Box>
           <Box component="nav" aria-label="Footer navigation">
             <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
-              <Link href="#" underline="hover" color="text.primary" variant="body2">Docs</Link>
-              <Link href="#" underline="hover" color="text.primary" variant="body2">API</Link>
-              <Link href="#" underline="hover" color="text.primary" variant="body2">Support</Link>
+              <Link href="https://github.com/Cloud-Native-Projekt/documentation" target="_blank"
+                rel="noopener noreferrer" underline="hover" color="text.primary" variant="body2">Docs</Link>
+              <Link href="/support" underline="hover" color="text.primary" variant="body2">Support</Link>
               <Link href="/privacy" underline="hover" color="text.primary" variant="body2">Privacy</Link>
             </Stack>
           </Box>
@@ -41,7 +40,7 @@ export default function Footer() {
               color="inherit"
               size="small"
               aria-label="GitHub"
-              component="a"
+              component={Link}
               href="https://github.com/Cloud-Native-Projekt"
               target="_blank"
               rel="noopener noreferrer"
@@ -52,7 +51,7 @@ export default function Footer() {
               color="inherit"
               size="small"
               aria-label="LinkedIn"
-              component="a"
+              component={Link}
               href="https://www.linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -63,7 +62,7 @@ export default function Footer() {
               color="inherit"
               size="small"
               aria-label="CAS DHBW Lecture"
-              component="a"
+              component={Link}
               href="https://www.cas.dhbw.de/fileadmin/user_upload/Studium/Wirtschaft/M_W_WI_Modulhandbuch.pdf#page=119"
               target="_blank"
               rel="noopener noreferrer"
