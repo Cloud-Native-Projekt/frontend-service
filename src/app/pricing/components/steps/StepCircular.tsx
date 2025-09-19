@@ -35,9 +35,6 @@ export default function StepCircular() {
 
   return (
     <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-      <Typography variant="body2" color="text.secondary" aria-live="polite">
-        {current.label}
-      </Typography>
 
       <Stack spacing={0.75} sx={{ width: '100%' }}>
         {STAGES.map((stage, i) => {

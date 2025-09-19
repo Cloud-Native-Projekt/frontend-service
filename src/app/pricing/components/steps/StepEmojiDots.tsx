@@ -19,7 +19,7 @@ export default function StepEmojiDots() {
       </Typography>
       <Typography aria-hidden variant="h4" component="div">🤝</Typography>
       <Typography variant="caption" color="text.secondary" align="center">
-        "Es gibt andere Welten als diese." – Jake Chambers
+        &ldquo;Es gibt andere Welten als diese.&rdquo; – Jake Chambers
       </Typography>
     </Stack>
   );

@@ -4,10 +4,7 @@ import React from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import ConstructionRounded from '@mui/icons-material/ConstructionRounded';
-import EngineeringRounded from '@mui/icons-material/EngineeringRounded';
-import HourglassBottomRounded from '@mui/icons-material/HourglassBottomRounded';
 
 export default function StepEnd() {
   return (

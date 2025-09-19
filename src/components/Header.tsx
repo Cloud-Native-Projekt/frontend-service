@@ -42,11 +42,11 @@ export default function Header() {
             </Box>
           </Link>
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-            <Button color="inherit">Features</Button>
-            <Button color="inherit">About</Button>
+            <Button component={Link} href='/support' color="inherit">Support</Button>
+            <Button component={Link} href='/privacy' color="inherit">Privacy</Button>
           </Box>
           <Button variant="outlined" color="inherit" component={Link} href="/pricing">
-            Pricing
+            Preise
           </Button>
         </Toolbar>
       </AppBar>
