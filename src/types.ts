@@ -18,3 +18,11 @@ export interface AnalysisResult {
   details: Record<string, unknown>;
   generatedAt: string;
 }
+
+export interface GeoResponse {
+  test: string;
+}
+
+export interface WeatherResponse {
+  tes: string;
+}

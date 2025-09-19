@@ -5,7 +5,7 @@ import { customThemeVars } from "@/theme";
 import { LocationStep } from "./location-step/LocationStep";
 import { ResultsStep } from "./results-step/ResultsStep";
 import { useProjectConfig } from "@/hooks/useProjectConfig";
-import { analyzeProject } from "@/actions/analyzeProject";
+import { analyzeCoordinates } from "@/actions/analyzeCoordinates";
 import { AnalysisResult, Location } from "@/types";
 
 const steps = ["Select location", "View results"];
@@ -20,7 +20,7 @@ export default function Body() {
   const runAnalysis = React.useCallback(async () => {
     if (!location) return;
     setLoading(true);
-    const result = await analyzeProject({
+    const result = await analyzeCoordinates({
       location,
       config: toConfig(),
     });
@@ -39,7 +39,7 @@ export default function Body() {
   const recalc = async () => {
     if (!location) return;
     setLoading(true);
-    const result = await analyzeProject({ location, config: toConfig() });
+    const result = await analyzeCoordinates({ location, config: toConfig() });
     setAnalysisResult(result);
     setLoading(false);
   };
