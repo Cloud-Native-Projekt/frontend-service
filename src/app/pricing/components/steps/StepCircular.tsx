@@ -31,8 +31,6 @@ export default function StepCircular() {
     return () => window.clearTimeout(timer);
   }, [index]);
 
-  const current = STAGES[index];
-
   return (
     <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
 

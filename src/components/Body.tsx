@@ -13,7 +13,7 @@ const steps = ["Select location", "View results"];
 export default function Body() {
   const [activeStep, setActiveStep] = React.useState(0);
   const [location, setLocation] = React.useState<Location | null>(null);
-  const { searchRadiusKm, hubHeight, setSearchRadiusKm, setHubHeight, reset: resetConfig, toConfig } = useProjectConfig();
+  const { searchRadiusKm, hubHeight, setSearchRadiusKm, setHubHeight, toConfig } = useProjectConfig();
   const [analysisResult, setAnalysisResult] = React.useState<AnalysisResult | null>(null);
   const [loading, setLoading] = React.useState(false);
 

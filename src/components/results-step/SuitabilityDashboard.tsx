@@ -1,7 +1,6 @@
 "use client";
 import React from 'react';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
 import { customThemeVars } from '@/theme';
 import { AnalysisResult, Location } from '@/types';
 import WindSpeedCard from '@/components/results-step/dashboard-cards/WindSpeedCard';
@@ -14,6 +13,7 @@ import ExtraCard from '@/components/results-step/dashboard-cards/ExtraCard';
 import ScoresCard from '@/components/results-step/dashboard-cards/ScoresCard';
 
 // Types used for parsing details
+type UnknownRecord = Record<string, unknown>;
 type WeatherSummary = Partial<{
   temperature_2m_mean: number;
   temperature_2m_max: number;
@@ -48,41 +48,55 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
   const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
   const toKm = (m: number) => m / 1000;
   const fmtKm = (m?: number) => (m == null ? '—' : `${toKm(m).toFixed(2)} km`);
-  const getNum = (obj: any, keys: string[]): number | undefined => {
-    for (const k of keys) { const val = obj?.[k]; if (typeof val === 'number' && !Number.isNaN(val)) return val; }
+  const getNum = (obj: Record<string, unknown>, keys: string[]): number | undefined => {
+    for (const k of keys) {
+      const val = obj?.[k];
+      if (typeof val === 'number' && !Number.isNaN(val)) return val;
+    }
     return undefined;
   };
-  const getBool = (obj: any, keys: string[]): boolean | undefined => {
-    for (const k of keys) { const val = obj?.[k]; if (typeof val === 'boolean') return val; }
+  const getBool = (obj: UnknownRecord, keys: string[]): boolean | undefined => {
+    for (const k of keys) {
+      const val = obj[k];
+      if (typeof val === 'boolean') return val;
+    }
     return undefined;
   };
-  const getArr = (obj: any, keys: string[]): any[] | undefined => {
-    for (const k of keys) { const val = obj?.[k]; if (Array.isArray(val)) return val; }
+  const getArr = <T = unknown>(obj: UnknownRecord, keys: string[]): T[] | undefined => {
+    for (const k of keys) {
+      const val = obj[k];
+      if (Array.isArray(val)) return val as T[];
+    }
     return undefined;
   };
 
-  const details: any = result?.details ?? {};
-  const input = details?.input as any | undefined;
+  const details: UnknownRecord = (result?.details ?? {}) as UnknownRecord;
+  type AnalysisInput = { config?: { searchRadiusKm?: number } };
+  const input = (details as { input?: unknown }).input as AnalysisInput | undefined;
   const radiusKm: number | undefined = input?.config?.searchRadiusKm;
 
   // Geo parsing
-  const geoRaw: any = details?.geo ?? {};
+  const geoRaw: UnknownRecord = ((details as { geo?: unknown }).geo ?? {}) as UnknownRecord;
   const geo: GeoSummary = {
     nearestPowerLineMeters: getNum(geoRaw, ['nearestPowerLineMeters', 'power_line_distance_m', 'distancePowerLine', 'nearest_power_line_m']),
     nearestDistributionCenterMeters: getNum(geoRaw, ['nearestDistributionCenterMeters', 'distribution_center_distance_m', 'distanceDistributionCenter', 'nearest_distribution_center_m']),
     buildingsPresent: getBool(geoRaw, ['buildingsPresent', 'hasBuildings', 'buildings']),
     buildingsMaxDistanceMeters: getNum(geoRaw, ['buildingsMaxDistanceMeters', 'nearestBuildingMeters', 'building_distance_m']),
     protectedPresent: getBool(geoRaw, ['protectedPresent', 'hasProtectedArea', 'protected']),
-    protectedTypes: (getArr(geoRaw, ['protectedTypes', 'protectedAreaTypes']) as string[] | undefined) ?? [],
+    protectedTypes: (getArr<string>(geoRaw, ['protectedTypes', 'protectedAreaTypes']) as string[] | undefined) ?? [],
   };
 
   // Weather parsing
-  const weatherRaw: any = details?.weather ?? {};
+  const weatherRaw: unknown = (details as { weather?: unknown }).weather ?? {};
   const weatherPair: WeatherPair = (() => {
     if (!weatherRaw) return {};
-    if (weatherRaw.past || weatherRaw.future) return { past: weatherRaw.past, future: weatherRaw.future };
-    if (weatherRaw.lastYear || weatherRaw.nextYear) return { past: weatherRaw.lastYear, future: weatherRaw.nextYear };
-    if (Array.isArray(weatherRaw) && weatherRaw.length) return { past: weatherRaw[0], future: weatherRaw[1] ?? weatherRaw[0] };
+    const wr = weatherRaw as UnknownRecord;
+    if ('past' in wr || 'future' in wr) return { past: wr.past as WeatherSummary, future: wr.future as WeatherSummary };
+    if ('lastYear' in wr || 'nextYear' in wr) return { past: wr.lastYear as WeatherSummary, future: wr.nextYear as WeatherSummary };
+    if (Array.isArray(weatherRaw) && (weatherRaw as unknown[]).length) {
+      const arr = weatherRaw as unknown[];
+      return { past: arr[0] as WeatherSummary, future: (arr[1] as WeatherSummary) ?? (arr[0] as WeatherSummary) };
+    }
     return { past: weatherRaw as WeatherSummary, future: weatherRaw as WeatherSummary };
   })();
 
@@ -114,7 +128,7 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
   if (geo.buildingsPresent === true) risks.push(`Buildings within area${geo.buildingsMaxDistanceMeters ? ` (closest ${fmtKm(geo.buildingsMaxDistanceMeters)})` : ''}`);
   if (geo.protectedPresent === true) risks.push(`Protected nature area present${geo.protectedTypes && geo.protectedTypes.length ? ` (${geo.protectedTypes.join(', ')})` : ''}`);
 
-  const theme = useTheme();
+  // const theme = useTheme();
   // Layout: 4x4 tiles (equal). At md+ use absolute tile placement; below md, stack.
   return (
     <Box
