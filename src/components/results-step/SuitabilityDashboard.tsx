@@ -176,7 +176,7 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
       </Box>
 
       {/* Tiles 9,10,13,14: Map */}
-      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1 / span 2' }, gridRow: { md: '3 / span 2' } }}>
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1 / span 2' }, gridRow: { md: '3 / span 2' }, minHeight: 350 }}>
         <MapCard location={location} radiusKm={radiusKm} />
       </Box>
 
