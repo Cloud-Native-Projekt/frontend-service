@@ -15,6 +15,10 @@ export const customThemeVars = {
     padding: { mobile: MOBILE_SPACE, desktop: DESKTOP_SPACE },
     innerMargin: { mobile: MOBILE_SPACE, desktop: DESKTOP_SPACE },
   },
+  grid: {
+    gap: { mobile: MOBILE_SPACE, desktop: '22px' },
+    containerHeight: { mobile: 'auto', desktop: '50vh' },
+  },
 };
 
 const theme = createTheme({
