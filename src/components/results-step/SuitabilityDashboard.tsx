@@ -1,212 +1,187 @@
 "use client";
 import React from 'react';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import { customThemeVars } from '@/theme';
 import { AnalysisResult, Location } from '@/types';
+import WindSpeedCard from '@/components/results-step/dashboard-cards/WindSpeedCard';
+import TemperatureCard from '@/components/results-step/dashboard-cards/TemperatureCard';
+import SunshineCard from '@/components/results-step/dashboard-cards/SunshineCard';
+import DistancesCard from '@/components/results-step/dashboard-cards/DistancesCard';
+import MapCard from '@/components/results-step/dashboard-cards/MapCard';
+import AllowanceRisksCard from '@/components/results-step/dashboard-cards/AllowanceRisksCard';
+import ExtraCard from '@/components/results-step/dashboard-cards/ExtraCard';
+import ScoresCard from '@/components/results-step/dashboard-cards/ScoresCard';
 
-interface SuitabilityData {
-  coordinate: { lat: number; lng: number };
-  temperature: { min: number; max: number; mean: number };
-  windTemp: { min: number; max: number; mean: number };
-  rating: number; // fallback rating (overridden by result.score when present)
-  distancePowerLine: number;
-  distanceDistributionCenter: number;
-  allowed: boolean;
-  notes: string[];
-  riskFlags: string[];
-}
+// Types used for parsing details
+type WeatherSummary = Partial<{
+  temperature_2m_mean: number;
+  temperature_2m_max: number;
+  temperature_2m_min: number;
+  cloud_cover_mean: number;
+  wind_speed_10m_mean: number;
+  wind_speed_10m_min: number;
+  wind_speed_10m_max: number;
+  sunshine_duration: number;
+  precipitation_sum: number;
+  precipitation_hours: number;
+}>;
 
-interface SuitabilityDashboardProps {
+type WeatherPair = { past?: WeatherSummary; future?: WeatherSummary };
+
+type GeoSummary = Partial<{
+  nearestPowerLineMeters: number;
+  nearestDistributionCenterMeters: number;
+  buildingsPresent: boolean;
+  buildingsMaxDistanceMeters: number;
+  protectedPresent: boolean;
+  protectedTypes: string[];
+}>;
+
+export interface SuitabilityDashboardProps {
   result: AnalysisResult | null;
   location: Location | null;
-  onReset: () => void;
-  onRecalculate?: () => void;
-  recalculating?: boolean;
-  // Optional custom metrics data (otherwise internal mock is used)
-  dataOverride?: Partial<SuitabilityData>;
 }
 
-// Mock data generator (static for now)
-const mockSuitability: SuitabilityData = {
-  coordinate: { lat: 51.10342, lng: 10.26401 },
-  temperature: { min: -5, max: 32, mean: 14 },
-  windTemp: { min: -3, max: 28, mean: 12 },
-  rating: 82,
-  distancePowerLine: 950,
-  distanceDistributionCenter: 6200,
-  allowed: true,
-  notes: [
-    'Soil stability acceptable',
-    'Access road within 1.2km',
-    'No protected wildlife within 3km radius'
-  ],
-  riskFlags: ['Moderate icing risk in winter']
-};
+const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, location }) => {
+  // Helpers
+  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+  const toKm = (m: number) => m / 1000;
+  const fmtKm = (m?: number) => (m == null ? '—' : `${toKm(m).toFixed(2)} km`);
+  const getNum = (obj: any, keys: string[]): number | undefined => {
+    for (const k of keys) { const val = obj?.[k]; if (typeof val === 'number' && !Number.isNaN(val)) return val; }
+    return undefined;
+  };
+  const getBool = (obj: any, keys: string[]): boolean | undefined => {
+    for (const k of keys) { const val = obj?.[k]; if (typeof val === 'boolean') return val; }
+    return undefined;
+  };
+  const getArr = (obj: any, keys: string[]): any[] | undefined => {
+    for (const k of keys) { const val = obj?.[k]; if (Array.isArray(val)) return val; }
+    return undefined;
+  };
 
-const StatCard: React.FC<{ title: string; primary: string | number; secondary?: string; accent?: React.ReactNode }> = ({ title, primary, secondary, accent }) => (
-  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <CardContent>
-      <Typography variant="overline" sx={{ letterSpacing: 0.6 }}>{title}</Typography>
-      <Typography variant="h5" fontWeight={600}>{primary}</Typography>
-      {secondary && <Typography variant="body2" color="text.secondary">{secondary}</Typography>}
-      {accent && <Box mt={1}>{accent}</Box>}
-    </CardContent>
-  </Card>
-);
+  const details: any = result?.details ?? {};
+  const input = details?.input as any | undefined;
+  const radiusKm: number | undefined = input?.config?.searchRadiusKm;
 
-const RangeStats: React.FC<{ label: string; data: { min: number; max: number; mean: number }; unit: string }> = ({ label, data, unit }) => (
-  <StatCard
-    title={label}
-    primary={data.mean + unit}
-    secondary={`min ${data.min}${unit}  •  max ${data.max}${unit}`}
-    accent={<LinearProgress variant="determinate" value={((data.mean - data.min) / (data.max - data.min)) * 100} sx={{ height: 6, borderRadius: 3 }} />}
-  />
-);
+  // Geo parsing
+  const geoRaw: any = details?.geo ?? {};
+  const geo: GeoSummary = {
+    nearestPowerLineMeters: getNum(geoRaw, ['nearestPowerLineMeters', 'power_line_distance_m', 'distancePowerLine', 'nearest_power_line_m']),
+    nearestDistributionCenterMeters: getNum(geoRaw, ['nearestDistributionCenterMeters', 'distribution_center_distance_m', 'distanceDistributionCenter', 'nearest_distribution_center_m']),
+    buildingsPresent: getBool(geoRaw, ['buildingsPresent', 'hasBuildings', 'buildings']),
+    buildingsMaxDistanceMeters: getNum(geoRaw, ['buildingsMaxDistanceMeters', 'nearestBuildingMeters', 'building_distance_m']),
+    protectedPresent: getBool(geoRaw, ['protectedPresent', 'hasProtectedArea', 'protected']),
+    protectedTypes: (getArr(geoRaw, ['protectedTypes', 'protectedAreaTypes']) as string[] | undefined) ?? [],
+  };
 
-const DistanceStat: React.FC<{ label: string; meters: number }> = ({ label, meters }) => (
-  <StatCard
-    title={label}
-    primary={(meters / 1000).toFixed(2) + ' km'}
-    secondary={`${meters} m`}
-  />
-);
+  // Weather parsing
+  const weatherRaw: any = details?.weather ?? {};
+  const weatherPair: WeatherPair = (() => {
+    if (!weatherRaw) return {};
+    if (weatherRaw.past || weatherRaw.future) return { past: weatherRaw.past, future: weatherRaw.future };
+    if (weatherRaw.lastYear || weatherRaw.nextYear) return { past: weatherRaw.lastYear, future: weatherRaw.nextYear };
+    if (Array.isArray(weatherRaw) && weatherRaw.length) return { past: weatherRaw[0], future: weatherRaw[1] ?? weatherRaw[0] };
+    return { past: weatherRaw as WeatherSummary, future: weatherRaw as WeatherSummary };
+  })();
 
-const AllowedChip: React.FC<{ allowed: boolean }> = ({ allowed }) => (
-  <Chip
-    color={allowed ? 'success' : 'error'}
-    variant="filled"
-    label={allowed ? 'ALLOWED' : 'NOT ALLOWED'}
-    icon={allowed ? <CheckCircleIcon /> : <CancelIcon />}
-    sx={{ fontWeight: 600, borderRadius: 2 }}
-  />
-);
+  const past = weatherPair.past ?? {};
+  const future = weatherPair.future ?? {};
 
-const RatingGauge: React.FC<{ value: number }> = ({ value }) => (
-  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <CardHeader title={<Typography variant="overline">Overall Rating</Typography>} sx={{ pb: 0 }} />
-    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-      <Box mb={1}>
-        <LinearProgress value={value} variant="determinate" sx={{ height: 12, borderRadius: 6 }} />
-      </Box>
-      <Typography variant="h4" fontWeight={700}>{value}<Typography component="span" variant="h6" ml={0.5}>/100</Typography></Typography>
-    </CardContent>
-  </Card>
-);
+  // Scores
+  const solarBase = (ws: WeatherSummary) => {
+    const sun = ws.sunshine_duration ?? 0;
+    const base = clamp(((sun - 800) / (2200 - 800)) * 100, 0, 100);
+    const cloud = ws.cloud_cover_mean;
+    const clearBoost = cloud == null ? 50 : (100 - clamp(cloud, 0, 100));
+    return Math.round(0.7 * base + 0.3 * clearBoost);
+  };
+  const windBase = (ws: WeatherSummary) => {
+    const mean = ws.wind_speed_10m_mean ?? 0;
+    const score = clamp(((mean - 3) / (10 - 3)) * 100, 0, 100);
+    return Math.round(score);
+  };
+  const solarScore = Math.round((solarBase(past) + solarBase(future)) / 2);
+  const windScore = Math.round((windBase(past) + windBase(future)) / 2);
 
-const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({
-  result,
-  location,
-  onReset,
-  onRecalculate,
-  recalculating,
-  dataOverride
-}) => {
-  // Merge overrides with mock baseline
-  const data: SuitabilityData = {
-    ...mockSuitability,
-    ...dataOverride,
-    coordinate: location ?? dataOverride?.coordinate ?? mockSuitability.coordinate,
-    rating: result?.score ?? dataOverride?.rating ?? mockSuitability.rating,
-  } as SuitabilityData;
+  // Allowed / risks
+  const allowed = geo.protectedPresent === true ? false : true;
+  const notes: string[] = [];
+  const risks: string[] = [];
+  if (geo.nearestPowerLineMeters != null) notes.push(`Nearest power line: ${fmtKm(geo.nearestPowerLineMeters)}`);
+  if (geo.nearestDistributionCenterMeters != null) notes.push(`Nearest distribution center: ${fmtKm(geo.nearestDistributionCenterMeters)}`);
+  if (geo.buildingsPresent === true) risks.push(`Buildings within area${geo.buildingsMaxDistanceMeters ? ` (closest ${fmtKm(geo.buildingsMaxDistanceMeters)})` : ''}`);
+  if (geo.protectedPresent === true) risks.push(`Protected nature area present${geo.protectedTypes && geo.protectedTypes.length ? ` (${geo.protectedTypes.join(', ')})` : ''}`);
 
-  // Derive notes / risk from result.details when available (best-effort)
-  const detailObj = result?.details as Record<string, unknown> | undefined;
-  const dynamicNotes: string[] = Array.isArray(detailObj?.notes) ? detailObj!.notes : [];
-  const dynamicRisks: string[] = Array.isArray(detailObj?.riskFlags) ? detailObj!.riskFlags : [];
-  const notes = dynamicNotes.length ? dynamicNotes : data.notes;
-  const riskFlags = dynamicRisks.length ? dynamicRisks : data.riskFlags;
-
+  const theme = useTheme();
+  // Layout: 4x4 tiles (equal). At md+ use absolute tile placement; below md, stack.
   return (
-    <Box sx={{ width: '100%', display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' } }}>
-      {/* Summary / Actions (combined original ResultsStep card) */}
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 12' } }}>
-        <Card sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="h6" fontWeight={600}>Analyse-Ergebnis</Typography>
-          {location && (
-            <Typography variant="body2" color="text.secondary">
-              Position: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-            </Typography>
-          )}
-          {result ? (
-            <Typography variant="body2">
-              Score: {result.score} · Zeit: {new Date(result.generatedAt).toLocaleTimeString()}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Kein Ergebnis geladen.
-            </Typography>
-          )}
-          <Divider sx={{ my: 1 }} />
-          <Stack direction="row" spacing={1}>
-            <Button variant="contained" onClick={onReset}>Neuer Versuch</Button>
-            {onRecalculate && (
-              <Button
-                variant="outlined"
-                onClick={onRecalculate}
-                disabled={recalculating}
-              >
-                {recalculating ? 'Aktualisiere...' : 'Neu berechnen'}
-              </Button>
-            )}
-          </Stack>
-        </Card>
+    <Box
+      sx={{
+        width: '100%',
+        maxHeight: { md: '90vh', xs: 'none' },
+        display: 'grid',
+        gap: { xs: customThemeVars.grid.gap.mobile, sm: customThemeVars.grid.gap.mobile, md: customThemeVars.grid.gap.desktop },
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+        gridTemplateRows: { md: 'repeat(4, minmax(0, 1fr))' },
+        height: '100%',
+        maxWidth: '100vw',
+      }}
+    >
+      {/* Tile 1-2: Windspeed */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1 / span 2' }, gridRow: { md: '1' } }}>
+        <WindSpeedCard
+          past={{ min: past.wind_speed_10m_min, max: past.wind_speed_10m_max, mean: past.wind_speed_10m_mean }}
+          future={{ min: future.wind_speed_10m_min, max: future.wind_speed_10m_max, mean: future.wind_speed_10m_mean }}
+        />
       </Box>
 
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><RangeStats label="Air Temp" data={data.temperature} unit="°C" /></Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><RangeStats label="Wind Temp" data={data.windTemp} unit="°C" /></Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><DistanceStat label="Power Line" meters={data.distancePowerLine} /></Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><DistanceStat label="Distribution Ctr" meters={data.distanceDistributionCenter} /></Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}><RatingGauge value={data.rating} /></Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 3' } }}>
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Typography variant="overline">Status</Typography>
-            <Box mt={1}><AllowedChip allowed={data.allowed} /></Box>
-            <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-              Coordinate: {data.coordinate.lat.toFixed(4)}, {data.coordinate.lng.toFixed(4)}
-            </Typography>
-          </CardContent>
-        </Card>
+      {/* Tile 3-4: Temperature */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '3 / span 2' }, gridRow: { md: '1' } }}>
+        <TemperatureCard
+          past={{ min: past.temperature_2m_min, max: past.temperature_2m_max, mean: past.temperature_2m_mean }}
+          future={{ min: future.temperature_2m_min, max: future.temperature_2m_max, mean: future.temperature_2m_mean }}
+        />
       </Box>
-      <Box sx={{ gridColumn: { xs: '1', md: 'span 6' } }}>
-        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <CardHeader title={<Typography variant="overline">Notes</Typography>} sx={{ pb: 0 }} />
-          <CardContent sx={{ pt: 1 }}>
-            <List dense>
-              {notes.map(n => (
-                <ListItem key={n} disablePadding>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <CheckCircleIcon color="success" fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={n} primaryTypographyProps={{ variant: 'body2' }} />
-                </ListItem>
-              ))}
-              {riskFlags.map(r => (
-                <ListItem key={r} disablePadding>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <WarningAmberIcon color="warning" fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={r} primaryTypographyProps={{ variant: 'body2' }} />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
+
+      {/* Tile 5-6: Sunshine */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1 / span 2' }, gridRow: { md: '2' } }}>
+        <SunshineCard
+          past={{ sunshine: past.sunshine_duration, cloud: past.cloud_cover_mean }}
+          future={{ sunshine: future.sunshine_duration, cloud: future.cloud_cover_mean }}
+        />
+      </Box>
+
+      {/* Tile 7-8: Distances */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '3 / span 2' }, gridRow: { md: '2' } }}>
+        <DistancesCard
+          powerLineMeters={geo.nearestPowerLineMeters}
+          distributionMeters={geo.nearestDistributionCenterMeters}
+        />
+      </Box>
+
+      {/* Tiles 9,10,13,14: Map */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '1 / span 2' }, gridRow: { md: '3 / span 2' } }}>
+        <MapCard location={location} radiusKm={radiusKm} />
+      </Box>
+
+      {/* Tiles 11,15: Allowance + Notes/Risks */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '3' }, gridRow: { md: '3 / span 2' } }}>
+        <AllowanceRisksCard allowed={allowed} notes={notes} risks={risks} />
+      </Box>
+
+      {/* Tile 12: Extra relevant (precipitation) */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '4' }, gridRow: { md: '3' } }}>
+        <ExtraCard
+          past={{ precipitation_sum: past.precipitation_sum, precipitation_hours: past.precipitation_hours }}
+          future={{ precipitation_sum: future.precipitation_sum, precipitation_hours: future.precipitation_hours }}
+        />
+      </Box>
+
+      {/* Tile 16: Scores */}
+      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '4' }, gridRow: { md: '4' } }}>
+        <ScoresCard solar={solarScore} wind={windScore} />
       </Box>
     </Box>
   );

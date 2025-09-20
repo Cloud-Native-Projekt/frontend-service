@@ -29,21 +29,6 @@ export default function Body() {
     setActiveStep(1);
   }, [location, toConfig]);
 
-  const handleReset = () => {
-    setActiveStep(0);
-    setLocation(null);
-    setAnalysisResult(null);
-    resetConfig();
-  };
-
-  const recalc = async () => {
-    if (!location) return;
-    setLoading(true);
-    const result = await analyzeCoordinates({ location, config: toConfig() });
-    setAnalysisResult(result);
-    setLoading(false);
-  };
-
   return (
     <Box
       sx={{
@@ -55,7 +40,6 @@ export default function Body() {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        minHeight: 0,
       }}
     >
       <Stepper
@@ -89,9 +73,6 @@ export default function Body() {
         <ResultsStep
           result={analysisResult}
           location={location}
-          onReset={handleReset}
-          onRecalculate={recalc}
-          recalculating={loading}
         />
       )}
     </Box>
