@@ -5,7 +5,7 @@ import { AnalysisRequest, AnalysisResult } from "@/types";
 type GeoResponse = unknown;
 type WeatherResponse = unknown;
 
-export async function analyzeCoordinates(_payload: AnalysisRequest): Promise<AnalysisResult> {
+export async function analyzeCoordinates(payload: AnalysisRequest): Promise<AnalysisResult> {
   const GEO_URL = process.env.GEO_SERVICE_URL;
   const WEATHER_URL = process.env.WEATHER_SERVICE_URL;
 
@@ -21,9 +21,15 @@ export async function analyzeCoordinates(_payload: AnalysisRequest): Promise<Ana
   }
 
   try {
+    const { location, config } = payload;
+    const radiusMeters = Math.max(1000, Math.min(5000, Math.round(config.searchRadiusKm * 1000)));
+    const lat = location.lat;
+    const lng = location.lng;
+
+    const todayStr = new Date().toISOString().slice(0, 10);
     const [geoRes, weatherRes] = await Promise.all([
-      fetch(GEO_URL + "/geo/power?lat=48.8290&lng=9.3126&radius=2000", { method: "GET", cache: "no-store" }),
-      fetch(WEATHER_URL + "/daily/2025-09-21/48.8290/9.3126/all", { method: "GET", cache: "no-store" }),
+      fetch(`${GEO_URL}/geo/power?lat=${lat}&lng=${lng}&radius=${radiusMeters}`, { method: "GET", cache: "no-store" }),
+      fetch(`${WEATHER_URL}/daily/${todayStr}/${lat}/${lng}/all`, { method: "GET", cache: "no-store" }),
     ]);
 
     console.log("Geo response:", await geoRes.clone().json());
@@ -40,7 +46,7 @@ export async function analyzeCoordinates(_payload: AnalysisRequest): Promise<Ana
 
     return {
       score: 100,
-      details: { geo, weather },
+      details: { geo, weather, input: payload },
       generatedAt: new Date().toISOString(),
     };
   } catch (e) {
