@@ -134,11 +134,11 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
     <Box
       sx={{
         width: '100%',
-        maxHeight: { md: '90vh', xs: 'none' },
+        maxHeight: { md: '90vh', xs: 'none', sm: 'none' },
         display: 'grid',
         gap: { xs: customThemeVars.grid.gap.mobile, sm: customThemeVars.grid.gap.mobile, md: customThemeVars.grid.gap.desktop },
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-        gridTemplateRows: { md: 'repeat(4, minmax(0, 1fr))' },
+        gridTemplateRows: { md: 'repeat(4, minmax(270px, 1fr))' },
         height: '100%',
         maxWidth: '100vw',
       }}
