@@ -9,7 +9,7 @@ import SunshineCard from '@/components/results-step/dashboard-cards/SunshineCard
 import DistancesCard from '@/components/results-step/dashboard-cards/DistancesCard';
 import MapCard from '@/components/results-step/dashboard-cards/MapCard';
 import AllowanceRisksCard from '@/components/results-step/dashboard-cards/AllowanceRisksCard';
-import ExtraCard from '@/components/results-step/dashboard-cards/ExtraCard';
+import RainCard from '@/components/results-step/dashboard-cards/RainCard';
 import ScoresCard from '@/components/results-step/dashboard-cards/ScoresCard';
 
 // Types used for parsing details
@@ -119,14 +119,71 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
   const solarScore = Math.round((solarBase(past) + solarBase(future)) / 2);
   const windScore = Math.round((windBase(past) + windBase(future)) / 2);
 
-  // Allowed / risks
-  const allowed = geo.protectedPresent === true ? false : true;
-  const notes: string[] = [];
-  const risks: string[] = [];
-  if (geo.nearestPowerLineMeters != null) notes.push(`Nearest power line: ${fmtKm(geo.nearestPowerLineMeters)}`);
-  if (geo.nearestDistributionCenterMeters != null) notes.push(`Nearest distribution center: ${fmtKm(geo.nearestDistributionCenterMeters)}`);
-  if (geo.buildingsPresent === true) risks.push(`Buildings within area${geo.buildingsMaxDistanceMeters ? ` (closest ${fmtKm(geo.buildingsMaxDistanceMeters)})` : ''}`);
-  if (geo.protectedPresent === true) risks.push(`Protected nature area present${geo.protectedTypes && geo.protectedTypes.length ? ` (${geo.protectedTypes.join(', ')})` : ''}`);
+  // Build assessment data for AllowanceRisksCard
+  const avg = (...vals: Array<number | undefined>) => {
+    const a = vals.filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+    return a.length ? a.reduce((s, v) => s + v, 0) / a.length : undefined;
+  };
+  const minOf = (...vals: Array<number | undefined>) => {
+    const a = vals.filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+    return a.length ? Math.min(...a) : undefined;
+  };
+  const maxOf = (...vals: Array<number | undefined>) => {
+    const a = vals.filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+    return a.length ? Math.max(...a) : undefined;
+  };
+
+  const buildingsWithin2km = (() => {
+    if (geo.buildingsPresent === false) return false;
+    if (geo.buildingsPresent === true) {
+      if (typeof geo.buildingsMaxDistanceMeters === 'number') return geo.buildingsMaxDistanceMeters <= 2000;
+      return undefined; // present but unknown distance
+    }
+    return undefined; // unknown
+  })();
+
+  const envZones = (() => {
+    if (geo.protectedPresent === true) {
+      const types = (geo.protectedTypes ?? []);
+      return (types.length ? types : ['Schutzgebiet']).map((t) => ({ type: t }));
+    }
+    if (geo.protectedPresent === false) return [];
+    return undefined;
+  })();
+
+  const assessmentData = {
+    trees: undefined,
+    buildings: { within2km: buildingsWithin2km, searchRadiusKm: radiusKm },
+    envZones,
+    distances: {
+      powerlineKm: geo.nearestPowerLineMeters == null ? undefined : toKm(geo.nearestPowerLineMeters),
+      substationKm: geo.nearestDistributionCenterMeters == null ? undefined : toKm(geo.nearestDistributionCenterMeters),
+    },
+    temperature: {
+      avgC: avg(past.temperature_2m_mean, future.temperature_2m_mean),
+      minC: minOf(past.temperature_2m_min, future.temperature_2m_min),
+      maxC: maxOf(past.temperature_2m_max, future.temperature_2m_max),
+    },
+    sunshine: {
+      hoursPerDay: undefined,
+      cloudCoveragePercent: avg(past.cloud_cover_mean, future.cloud_cover_mean),
+    },
+    wind: {
+      avgMetersPerSecond: avg(past.wind_speed_10m_mean, future.wind_speed_10m_mean),
+      gustMetersPerSecond: maxOf(past.wind_speed_10m_max, future.wind_speed_10m_max),
+      hubHeightMeters: undefined,
+    },
+    precipitation: {
+      mmPerDay: avg(
+        typeof past.precipitation_sum === 'number' ? past.precipitation_sum / 7 : undefined,
+        typeof future.precipitation_sum === 'number' ? future.precipitation_sum / 7 : undefined,
+      ),
+      hoursPerDay: avg(
+        typeof past.precipitation_hours === 'number' ? past.precipitation_hours / 7 : undefined,
+        typeof future.precipitation_hours === 'number' ? future.precipitation_hours / 7 : undefined,
+      ),
+    },
+  } as const;
 
   // const theme = useTheme();
   // Layout: 4x4 tiles (equal). At md+ use absolute tile placement; below md, stack.
@@ -180,14 +237,14 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
         <MapCard location={location} radiusKm={radiusKm} />
       </Box>
 
-      {/* Tiles 11,15: Allowance + Notes/Risks */}
+      {/* Tiles 11,15: Auflagen & Risiken */}
       <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '3' }, gridRow: { md: '3 / span 2' } }}>
-        <AllowanceRisksCard allowed={allowed} notes={notes} risks={risks} />
+        <AllowanceRisksCard data={assessmentData} />
       </Box>
 
       {/* Tile 12: Extra relevant (precipitation) */}
       <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '4' }, gridRow: { md: '3' } }}>
-        <ExtraCard
+        <RainCard
           past={{ precipitation_sum: past.precipitation_sum, precipitation_hours: past.precipitation_hours }}
           future={{ precipitation_sum: future.precipitation_sum, precipitation_hours: future.precipitation_hours }}
         />
