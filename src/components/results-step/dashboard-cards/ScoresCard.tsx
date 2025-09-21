@@ -7,27 +7,51 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
+import Link from 'next/link';
 
 export interface ScoresCardProps {
   solar: number;
   wind: number;
+  recommendation?: string;
+  onResetStepper?: () => void;
 }
 
-const ScoresCard: React.FC<ScoresCardProps> = ({ solar, wind }) => {
+const ScoresCard: React.FC<ScoresCardProps> = ({ solar, wind, recommendation, onResetStepper }) => {
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Area Scores" />
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: '8px', sm: '8px', md: '8px' } }}>
+      <CardHeader title="Allgemein Bewertungen" />
       <CardContent>
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip size="small" label="Solar" color="warning" variant="outlined" />
+            <Chip size="small" label="Solarenergie" color="warning" variant="outlined" />
             <LinearProgress value={solar} variant="determinate" sx={{ flex: 1 }} />
             <Typography variant="body2" sx={{ minWidth: 48, textAlign: 'right' }}>{solar}</Typography>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip size="small" label="Wind" color="info" variant="outlined" />
+            <Chip size="small" label="Windenergie" color="info" variant="outlined" />
             <LinearProgress value={wind} variant="determinate" sx={{ flex: 1 }} />
             <Typography variant="body2" sx={{ minWidth: 48, textAlign: 'right' }}>{wind}</Typography>
+          </Stack>
+          {recommendation && (
+            <>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                {recommendation}
+              </Typography>
+            </>
+          )}
+          <Stack direction="row" justifyContent="flex-end" sx={{ pt: 1 }}>
+            {onResetStepper ? (
+              <Button onClick={onResetStepper} variant="text" size="small">
+                Zurück zur Auswahl
+              </Button>
+            ) : (
+              <Button component={Link} href="/" variant="text" size="small">
+                Zurück zur Auswahl
+              </Button>
+            )}
           </Stack>
         </Stack>
       </CardContent>

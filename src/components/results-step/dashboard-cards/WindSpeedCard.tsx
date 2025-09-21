@@ -191,8 +191,8 @@ const WindSpeedCard: React.FC<WindSpeedCardProps> = ({ past, future }) => {
   const isRow = useMediaQuery(theme.breakpoints.up("sm"));
 
   return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column", paddingTop: 0 }}>
-      <CardHeader title="Wind Speed" />
+    <Card sx={{ height: "100%", display: "flex", flexDirection: "column", pt: { xs: '8px', sm: '8px', md: '16px' } }}>
+      <CardHeader title="Windgeschwindigkeit" />
       <CardContent sx={{ padding: 0, overflow: "hidden" }}>
         <Stack
           direction={isRow ? "row" : "column"}
@@ -204,7 +204,7 @@ const WindSpeedCard: React.FC<WindSpeedCardProps> = ({ past, future }) => {
           sx={{ width: "100%", flexWrap: "wrap" }}
         >
           <SpeedGauge
-            label="Past"
+            label="Vergangenheit"
             mean={past.mean}
             min={past.min}
             max={past.max}
@@ -229,12 +229,12 @@ const WindSpeedCard: React.FC<WindSpeedCardProps> = ({ past, future }) => {
                 : "—"}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              mean change
+              mittlere Änderung
             </Typography>
           </Stack>
 
           <SpeedGauge
-            label="Next"
+            label="Zukunft"
             mean={future.mean}
             min={future.min}
             max={future.max}

@@ -83,7 +83,7 @@ const Meter: React.FC<{ label: string; sum?: number; hours?: number }>
   };
 
 const RainCard: React.FC<RainCardProps> = ({ past, future }) => (
-  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: '8px', sm: '8px', md: '16px' } }}>
     <CardHeader title="Niederschlag" />
     <CardContent sx={{ p: 0 }}>
       <Stack spacing={1.25} sx={{ p: 2 }}>

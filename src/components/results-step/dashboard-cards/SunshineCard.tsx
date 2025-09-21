@@ -142,8 +142,8 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ past, future }) => {
   const isRow = useMediaQuery(theme.breakpoints.up('sm'));
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Sunshine (h/day)" />
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: '8px', sm: '8px', md: '16px' } }}>
+      <CardHeader title="Sonnenschein (h/Tag)" />
       <CardContent sx={{ p: 0, overflow: 'hidden' }}>
         <Stack
           direction={isRow ? 'row' : 'column'}
@@ -152,17 +152,17 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ past, future }) => {
           divider={<Divider orientation={isRow ? 'vertical' : 'horizontal'} flexItem />}
           sx={{ width: '100%', flexWrap: 'wrap' }}
         >
-          <MetricWithClouds label="Past" hours={pastH} cloud={past.cloud} isRow={isRow} />
+          <MetricWithClouds label="Vergangenheit" hours={pastH} cloud={past.cloud} isRow={isRow} />
 
           <Stack alignItems="center" spacing={0.25} sx={{ px: 1 }}>
             {trend.dir === 1 && <ArrowUpward sx={{ color: 'success.main', fontSize: 20 }} />}
             {trend.dir === -1 && <ArrowDownward sx={{ color: 'error.main', fontSize: 20 }} />}
             {trend.dir === 0 && <Remove sx={{ color: 'text.secondary', fontSize: 20 }} />}
-            <Typography variant="caption" color="text.secondary">{`${trend.delta > 0 ? '+' : ''}${trend.delta.toFixed(1)} h/day`}</Typography>
-            <Typography variant="caption" color="text.secondary">mean change</Typography>
+            <Typography variant="caption" color="text.secondary">{`${trend.delta > 0 ? '+' : ''}${trend.delta.toFixed(1)} h/Tag`}</Typography>
+            <Typography variant="caption" color="text.secondary">mittlere Änderung</Typography>
           </Stack>
 
-          <MetricWithClouds label="Next" hours={futureH} cloud={future.cloud} isRow={isRow} />
+          <MetricWithClouds label="Zukunft" hours={futureH} cloud={future.cloud} isRow={isRow} />
         </Stack>
       </CardContent>
     </Card>

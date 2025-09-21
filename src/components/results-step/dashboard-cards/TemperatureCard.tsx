@@ -131,8 +131,8 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({ past, future }) => {
   const isRow = useMediaQuery(theme.breakpoints.up('sm'));
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Temperature (°C)" />
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: '8px', sm: '8px', md: '16px' } }}>
+      <CardHeader title="Temperatur (°C)" />
       <CardContent sx={{ p: 0, overflow: 'hidden' }}>
         <Stack
           direction={isRow ? 'row' : 'column'}
@@ -141,17 +141,17 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({ past, future }) => {
           divider={<Divider orientation={isRow ? 'vertical' : 'horizontal'} flexItem />}
           sx={{ width: '100%', flexWrap: 'wrap' }}
         >
-          <TemperatureGauge label="Past" mean={past.mean} min={past.min} max={past.max} domainMin={domainMin} domainMax={domainMax} isRow={isRow} />
+          <TemperatureGauge label="Vergangenheit" mean={past.mean} min={past.min} max={past.max} domainMin={domainMin} domainMax={domainMax} isRow={isRow} />
 
           <Stack alignItems="center" spacing={0.25} sx={{ px: 1 }}>
             {trend.dir === 1 && <ArrowUpward sx={{ color: 'error.main', fontSize: 20 }} />}
             {trend.dir === -1 && <ArrowDownward sx={{ color: 'info.main', fontSize: 20 }} />}
             {trend.dir === 0 && <Remove sx={{ color: 'text.secondary', fontSize: 20 }} />}
             <Typography variant="caption" color="text.secondary">{`${trend.delta > 0 ? '+' : ''}${trend.delta.toFixed(1)} °C`}</Typography>
-            <Typography variant="caption" color="text.secondary">mean change</Typography>
+            <Typography variant="caption" color="text.secondary">mittlere Änderung</Typography>
           </Stack>
 
-          <TemperatureGauge label="Next" mean={future.mean} min={future.min} max={future.max} domainMin={domainMin} domainMax={domainMax} isRow={isRow} />
+          <TemperatureGauge label="Zukunft" mean={future.mean} min={future.min} max={future.max} domainMin={domainMin} domainMax={domainMax} isRow={isRow} />
         </Stack>
       </CardContent>
     </Card>

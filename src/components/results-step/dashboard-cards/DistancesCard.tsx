@@ -19,7 +19,7 @@ export interface DistancesCardProps {
 }
 
 const formatDistance = (meters?: number) => {
-  if (meters == null) return "10+ km"; // missing = >10 km
+  if (meters == null) return "10+ km";
   const km = meters / 1000;
   if (km >= 10) return "10+ km";
   if (km >= 1) return `${km.toFixed(1)} km`;
@@ -167,13 +167,13 @@ const DistancesCard: React.FC<DistancesCardProps> = ({
   const domainMaxKilometers = 10;
 
   return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <CardHeader title="Grid proximity" />
+    <Card sx={{ height: "100%", display: "flex", flexDirection: "column", pt: { xs: '8px', sm: '8px', md: '16px' } }}>
+
       <CardContent sx={{ p: 0 }}>
         <Stack spacing={2} sx={{ width: "100%", p: 2 }}>
           <Bar
             icon={<ElectricalServicesIcon color="info" />}
-            label="Nearest power line"
+            label="Nächste Stromleitung"
             meters={powerLineMeters}
             thresholds={thresholds}
             domainMaxKilometers={domainMaxKilometers}
@@ -181,7 +181,7 @@ const DistancesCard: React.FC<DistancesCardProps> = ({
           <Divider flexItem />
           <Bar
             icon={<CellTowerIcon color="success" />}
-            label="Nearest distribution center"
+            label="Nächstes Umspannwerk"
             meters={distributionMeters}
             thresholds={thresholds}
             domainMaxKilometers={domainMaxKilometers}

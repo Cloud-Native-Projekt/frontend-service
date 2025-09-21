@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Card, Typography, Button } from "@mui/material";
+import { Card, Typography, Button, CircularProgress, Box } from "@mui/material";
 import { Location } from "@/types";
 
 interface Props {
@@ -32,7 +32,10 @@ export function SummaryCard({ location, radius, hubHeight, onAnalyze, disabled, 
         variant="contained"
         size="large"
       >
-        {loading ? "Analysiere..." : "Weiter"}
+        {loading ?
+          <Box>
+            Analyse läuft  <CircularProgress size={14} />
+          </Box> : "Weiter"}
       </Button>
     </Card>
   );
