@@ -11,6 +11,7 @@ import MapCard from '@/components/results-step/dashboard-cards/MapCard';
 import AllowanceRisksCard from '@/components/results-step/dashboard-cards/AllowanceRisksCard';
 import RainCard from '@/components/results-step/dashboard-cards/RainCard';
 import ScoresCard from '@/components/results-step/dashboard-cards/ScoresCard';
+import { calculateScores } from '@/actions/calculateScores';
 
 // Types used for parsing details
 type UnknownRecord = Record<string, unknown>;
@@ -41,13 +42,12 @@ type GeoSummary = Partial<{
 export interface SuitabilityDashboardProps {
   result: AnalysisResult | null;
   location: Location | null;
+  resetStepper?: () => void;
 }
 
-const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, location }) => {
+const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, location, resetStepper }) => {
   // Helpers
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
   const toKm = (m: number) => m / 1000;
-  const fmtKm = (m?: number) => (m == null ? '—' : `${toKm(m).toFixed(2)} km`);
   const getNum = (obj: Record<string, unknown>, keys: string[]): number | undefined => {
     for (const k of keys) {
       const val = obj?.[k];
@@ -103,21 +103,9 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
   const past = weatherPair.past ?? {};
   const future = weatherPair.future ?? {};
 
-  // Scores
-  const solarBase = (ws: WeatherSummary) => {
-    const sun = ws.sunshine_duration ?? 0;
-    const base = clamp(((sun - 800) / (2200 - 800)) * 100, 0, 100);
-    const cloud = ws.cloud_cover_mean;
-    const clearBoost = cloud == null ? 50 : (100 - clamp(cloud, 0, 100));
-    return Math.round(0.7 * base + 0.3 * clearBoost);
-  };
-  const windBase = (ws: WeatherSummary) => {
-    const mean = ws.wind_speed_10m_mean ?? 0;
-    const score = clamp(((mean - 3) / (10 - 3)) * 100, 0, 100);
-    return Math.round(score);
-  };
-  const solarScore = Math.round((solarBase(past) + solarBase(future)) / 2);
-  const windScore = Math.round((windBase(past) + windBase(future)) / 2);
+  // Scores via centralized action
+  const config = (input?.config ?? {}) as { searchRadiusKm?: number; hubHeight?: number };
+  const { solar: solarScore, wind: windScore, recommendation } = calculateScores(details, config as any);
 
   // Build assessment data for AllowanceRisksCard
   const avg = (...vals: Array<number | undefined>) => {
@@ -252,7 +240,7 @@ const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, loc
 
       {/* Tile 16: Scores */}
       <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1', md: '4' }, gridRow: { md: '4' } }}>
-        <ScoresCard solar={solarScore} wind={windScore} />
+        <ScoresCard solar={solarScore} wind={windScore} recommendation={recommendation} onResetStepper={resetStepper} />
       </Box>
     </Box>
   );

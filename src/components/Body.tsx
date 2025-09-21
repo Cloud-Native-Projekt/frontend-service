@@ -8,7 +8,7 @@ import { useProjectConfig } from "@/hooks/useProjectConfig";
 import { analyzeCoordinates } from "@/actions/analyzeCoordinates";
 import { AnalysisResult, Location } from "@/types";
 
-const steps = ["Select location", "View results"];
+const steps = ["Standort wählen", "Ergebnisse ansehen"];
 
 export default function Body() {
   const [activeStep, setActiveStep] = React.useState(0);
@@ -28,6 +28,14 @@ export default function Body() {
     setLoading(false);
     setActiveStep(1);
   }, [location, toConfig]);
+
+  const resetToSelection = React.useCallback(() => {
+    setActiveStep(0);
+    console.log("Resetting location and result");
+    setLocation(null);
+    setAnalysisResult(null);
+    setLoading(false);
+  }, []);
 
   return (
     <Box
@@ -73,6 +81,7 @@ export default function Body() {
         <ResultsStep
           result={analysisResult}
           location={location}
+          onResetStepper={resetToSelection}
         />
       )}
     </Box>
