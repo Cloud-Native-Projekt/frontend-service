@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 
 interface Faq {
   q: string;
-  a: string;
+  a: string | React.ReactNode;
 }
 
 interface SupportLevelRow {
@@ -63,7 +63,7 @@ const faqs: Faq[] = [
   },
   {
     q: 'Wie sicher sind meine Daten?',
-    a: 'Wir nutzen Verschlüsselung (Transit & Rest), rollenbasierte Zugriffe und revisionsfähige Audit-Spuren (Enterprise).',
+    a: <Box>Ihre Daten sind wirklich extrem sicher. Mehr Informationen finden Sie <Link href="/privacy" color="secondary">in unserer Datenschutzerklärung</Link></Box>,
   },
 ];
 
