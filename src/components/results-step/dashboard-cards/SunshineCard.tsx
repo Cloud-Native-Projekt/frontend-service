@@ -96,10 +96,11 @@ const MetricWithClouds: React.FC<{ label: string; hours?: number; cloud?: number
         {/* Value */}
         <Stack alignItems="center" justifyContent="center" sx={{ position: 'absolute', inset: 0, zIndex: 1 }}>
           <Typography
-            variant={isRow ? 'h4' : 'h3'}
+            variant={isRow ? 'h3' : 'h2'}
             sx={{
-              fontWeight: 800,
-              lineHeight: 1.1,
+              fontFamily: 'Roboto, var(--font-roboto)',
+              fontWeight: 1000,
+              lineHeight: 1.3,
               color,
               textAlign: 'center',
               px: 1,
