@@ -4,8 +4,7 @@ import Card from "@mui/material/Card";
 import { Location } from "@/types";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import { divIcon, Point } from "leaflet";
-import { renderToString } from "react-dom/server";
+import { renderToStaticMarkup } from "react-dom/server";
 import LocationOnOutlined from "@mui/icons-material/LocationOnOutlined";
 
 // Dynamically import leaflet components (disable SSR)
@@ -31,16 +30,39 @@ export interface MapCardProps {
   radiusKm?: number;
 }
 
-// Custom marker icon using MUI icon
-const markerIcon = divIcon({
-  html: renderToString(<LocationOnOutlined fontSize="large" />),
-  className: "marker-icon",
-  iconSize: [40, 40],
-  iconAnchor: new Point(20, 40),
-  popupAnchor: new Point(0, -40),
-});
-
 const MapCard: React.FC<MapCardProps> = ({ location, radiusKm }) => {
+  const [leaflet, setLeaflet] = React.useState<typeof import("leaflet") | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    import("leaflet")
+      .then((module) => {
+        if (active) {
+          setLeaflet(module);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load Leaflet utilities", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const markerIcon = React.useMemo(() => {
+    if (!leaflet) return undefined;
+    const markerHtml = renderToStaticMarkup(
+      <LocationOnOutlined fontSize="large" color="primary" sx={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.35))" }} />
+    );
+    return leaflet.divIcon({
+      html: markerHtml,
+      className: "marker-icon",
+      iconSize: [40, 40],
+      iconAnchor: new leaflet.Point(20, 40),
+      popupAnchor: new leaflet.Point(0, -40),
+    });
+  }, [leaflet]);
+
   const center: [number, number] = location
     ? [location.lat, location.lng]
     : [51.10342, 10.26401]; // fallback: middle of Germany
@@ -60,7 +82,9 @@ const MapCard: React.FC<MapCardProps> = ({ location, radiusKm }) => {
         attributionControl={false}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {location && <Marker position={[location.lat, location.lng]} icon={markerIcon} />}
+        {location && markerIcon && (
+          <Marker position={[location.lat, location.lng]} icon={markerIcon} />
+        )}
         {location && (
           <Circle
             center={center}
