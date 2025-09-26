@@ -13,7 +13,7 @@ export interface AnalysisRequest {
   config: ProjectConfig;
 }
 
-export interface AnalysisResult {
+export interface AnalysisData {
   score: number;
   details: Record<string, unknown>;
   generatedAt: string;

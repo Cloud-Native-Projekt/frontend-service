@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import { AnalysisResult, Location } from "@/types";
+import { AnalysisData, Location } from "@/types";
 import SuitabilityDashboard from "@/components/results-step/SuitabilityDashboard";
 
 interface Props {
-  result: AnalysisResult | null;
+  result: AnalysisData | null;
   location: Location | null;
   onResetStepper?: () => void;
 }

@@ -6,7 +6,7 @@ import { LocationStep } from "./location-step/LocationStep";
 import { ResultsStep } from "./results-step/ResultsStep";
 import { useProjectConfig } from "@/hooks/useProjectConfig";
 import { analyzeCoordinates } from "@/actions/analyzeCoordinates";
-import { AnalysisResult, Location } from "@/types";
+import { AnalysisData, Location } from "@/types";
 
 const steps = ["Standort wählen", "Ergebnisse ansehen"];
 
@@ -14,7 +14,7 @@ export default function Body() {
   const [activeStep, setActiveStep] = React.useState(0);
   const [location, setLocation] = React.useState<Location | null>(null);
   const { searchRadiusKm, hubHeight, setSearchRadiusKm, setHubHeight, toConfig } = useProjectConfig();
-  const [analysisResult, setAnalysisResult] = React.useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = React.useState<AnalysisData | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   const runAnalysis = React.useCallback(async () => {

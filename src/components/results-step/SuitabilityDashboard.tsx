@@ -2,7 +2,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import { customThemeVars } from '@/theme';
-import { AnalysisResult, Location } from '@/types';
+import { AnalysisData, Location } from '@/types';
 import WindSpeedCard from '@/components/results-step/dashboard-cards/WindSpeedCard';
 import TemperatureCard from '@/components/results-step/dashboard-cards/TemperatureCard';
 import SunshineCard from '@/components/results-step/dashboard-cards/SunshineCard';
@@ -13,7 +13,6 @@ import RainCard from '@/components/results-step/dashboard-cards/RainCard';
 import ScoresCard from '@/components/results-step/dashboard-cards/ScoresCard';
 import { calculateScores } from '@/actions/calculateScores';
 
-// Types used for parsing details
 type UnknownRecord = Record<string, unknown>;
 type WeatherSummary = Partial<{
   temperature_2m_mean: number;
@@ -40,7 +39,7 @@ type GeoSummary = Partial<{
 }>;
 
 export interface SuitabilityDashboardProps {
-  result: AnalysisResult | null;
+  result: AnalysisData | null;
   location: Location | null;
   resetStepper?: () => void;
 }
