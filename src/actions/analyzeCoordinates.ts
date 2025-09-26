@@ -1,61 +1,35 @@
 "use server";
 
-import { AnalysisRequest, AnalysisResult } from "@/types";
+import { AnalysisRequest, AnalysisData } from "@/types";
+import { fetchGeoAggregate } from "./geoService";
+import { fetchWeatherAggregate } from "./weatherService";
 
-type GeoResponse = unknown;
-type WeatherResponse = unknown;
+function normalizeDistance(value: number): number {
+  return Number.isFinite(value) ? value : 0;
+}
 
-export async function analyzeCoordinates(payload: AnalysisRequest): Promise<AnalysisResult> {
-  const GEO_URL = process.env.GEO_SERVICE_URL;
-  const WEATHER_URL = process.env.WEATHER_SERVICE_URL;
+export async function analyzeCoordinates(payload: AnalysisRequest): Promise<AnalysisData> {
+  const { location, config } = payload;
 
-  if (!GEO_URL || !WEATHER_URL) {
-    return {
-      score: 0,
-      details: {
-        error: "Missing GEO_SERVICE_URL or WEATHER_SERVICE_URL",
-        env: { hasGeo: !!GEO_URL, hasWeather: !!WEATHER_URL },
-      },
-      generatedAt: new Date().toISOString(),
-    };
-  }
+  const radiusMeters = Math.max(1000, Math.min(5000, Math.round(config.searchRadiusKm * 1000)));
 
-  try {
-    const { location, config } = payload;
-    const radiusMeters = Math.max(1000, Math.min(5000, Math.round(config.searchRadiusKm * 1000)));
-    const lat = location.lat;
-    const lng = location.lng;
+  const [geo, weather] = await Promise.all([
+    fetchGeoAggregate({ lat: location.lat, lng: location.lng, radiusMeters }),
+    fetchWeatherAggregate({ lat: location.lat, lng: location.lng }),
+  ]);
+  console.log("Geo data:", geo);
+  console.log("Weather data:", weather);
 
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const [geoRes, weatherRes] = await Promise.all([
-      fetch(`${GEO_URL}/geo/power?lat=${lat}&lng=${lng}&radius=${radiusMeters}`, { method: "GET", cache: "no-store" }),
-      fetch(`${WEATHER_URL}/daily/${todayStr}/${lat}/${lng}/all`, { method: "GET", cache: "no-store" }),
-    ]);
-
-    console.log("Geo response:", await geoRes.clone().json());
-    console.log("Weather response:", await weatherRes.clone().json());
-
-    if (!geoRes.ok || !weatherRes.ok) {
-      throw new Error(`Upstream error: geo=${geoRes.status} weather=${weatherRes.status}`);
-    }
-
-    const [geo, weather] = await Promise.all([
-      geoRes.json() as Promise<GeoResponse>,
-      weatherRes.json() as Promise<WeatherResponse>,
-    ]);
-
-    return {
-      score: 100,
-      details: { geo, weather, input: payload },
-      generatedAt: new Date().toISOString(),
-    };
-  } catch (e) {
-    console.error("Analysis error:", e);
-    return {
-
-      score: 0,
-      details: { error: (e as Error).message },
-      generatedAt: new Date().toISOString(),
-    };
-  }
+  return {
+    temperature: weather.temperature,
+    windSpeed: weather.windSpeed,
+    sunshineDuration: weather.sunshineDuration,
+    cloudCoverage: weather.cloudCoverage,
+    precipitation: weather.precipitation,
+    distanceToNearestDistributionCenter: normalizeDistance(geo.distanceToNearestDistributionCenter),
+    distanceToNearestPowerline: normalizeDistance(geo.distanceToNearestPowerline),
+    protectedArea: geo.protectedArea,
+    forest: geo.forest,
+    building: geo.building,
+  };
 }

@@ -7,18 +7,16 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
 
 export interface ScoresCardProps {
   solar: number;
   wind: number;
-  recommendation?: string;
   onResetStepper?: () => void;
 }
 
-const ScoresCard: React.FC<ScoresCardProps> = ({ solar, wind, recommendation, onResetStepper }) => {
+const ScoresCard: React.FC<ScoresCardProps> = ({ solar, wind, onResetStepper }) => {
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: { xs: '8px', sm: '8px', md: '8px' } }}>
       <CardHeader title="Allgemein Bewertungen" />
@@ -34,14 +32,6 @@ const ScoresCard: React.FC<ScoresCardProps> = ({ solar, wind, recommendation, on
             <LinearProgress value={wind} variant="determinate" sx={{ flex: 1 }} />
             <Typography variant="body2" sx={{ minWidth: 48, textAlign: 'right' }}>{wind}</Typography>
           </Stack>
-          {recommendation && (
-            <>
-              <Divider sx={{ my: 1 }} />
-              <Typography variant="body2" color="text.secondary">
-                {recommendation}
-              </Typography>
-            </>
-          )}
           <Stack direction="row" justifyContent="flex-end" sx={{ pt: 1 }}>
             {onResetStepper ? (
               <Button onClick={onResetStepper} variant="text" size="small">

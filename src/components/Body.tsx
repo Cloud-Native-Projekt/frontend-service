@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import { Box, Stepper, Step, StepLabel } from "@mui/material";
+import { Alert, Box, Stepper, Step, StepLabel } from "@mui/material";
 import { customThemeVars } from "@/theme";
 import { LocationStep } from "./location-step/LocationStep";
 import { ResultsStep } from "./results-step/ResultsStep";
 import { useProjectConfig } from "@/hooks/useProjectConfig";
 import { analyzeCoordinates } from "@/actions/analyzeCoordinates";
-import { AnalysisData, Location } from "@/types";
+import { AnalysisData, Location, ProjectConfig } from "@/types";
 
 const steps = ["Standort wählen", "Ergebnisse ansehen"];
 
@@ -16,17 +16,29 @@ export default function Body() {
   const { searchRadiusKm, hubHeight, setSearchRadiusKm, setHubHeight, toConfig } = useProjectConfig();
   const [analysisResult, setAnalysisResult] = React.useState<AnalysisData | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [lastConfig, setLastConfig] = React.useState<ProjectConfig | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const runAnalysis = React.useCallback(async () => {
     if (!location) return;
+    setErrorMessage(null);
     setLoading(true);
-    const result = await analyzeCoordinates({
-      location,
-      config: toConfig(),
-    });
-    setAnalysisResult(result);
-    setLoading(false);
-    setActiveStep(1);
+    const config = toConfig();
+    setLastConfig(config);
+    try {
+      const result = await analyzeCoordinates({ location, config });
+      setAnalysisResult(result);
+      setErrorMessage(null);
+      setActiveStep(1);
+    }
+    catch (error) {
+      console.error("Error during analysis:", error);
+      setAnalysisResult(null);
+      setErrorMessage("Leider ist ein Fehler aufgetreten. Bitte versuchen Sie es in Kürze erneut.");
+    }
+    finally {
+      setLoading(false);
+    }
   }, [location, toConfig]);
 
   const resetToSelection = React.useCallback(() => {
@@ -35,6 +47,8 @@ export default function Body() {
     setLocation(null);
     setAnalysisResult(null);
     setLoading(false);
+    setLastConfig(null);
+    setErrorMessage(null);
   }, []);
 
   return (
@@ -64,6 +78,12 @@ export default function Body() {
         ))}
       </Stepper>
 
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
       {activeStep === 0 && (
         <LocationStep
           location={location}
@@ -81,6 +101,7 @@ export default function Body() {
         <ResultsStep
           result={analysisResult}
           location={location}
+          config={lastConfig}
           onResetStepper={resetToSelection}
         />
       )}

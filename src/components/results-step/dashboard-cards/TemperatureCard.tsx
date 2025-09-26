@@ -113,6 +113,8 @@ const TemperatureGauge: React.FC<GaugeProps> = React.memo(({ label, mean, min, m
   );
 });
 
+TemperatureGauge.displayName = "TemperatureGauge";
+
 const TemperatureCard: React.FC<TemperatureCardProps> = ({ past, future }) => {
   const vals = [past.min, past.max, past.mean, future.min, future.max, future.mean].filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
   const minObserved = vals.length ? Math.min(...vals) : 0;

@@ -12,7 +12,7 @@ export function RadiusCard({ value, onChange }: Props) {
     <Card variant="elevation" sx={{ display: "flex", flex: 1, flexDirection: "column", gap: 2 }}>
       <Typography variant="h5" fontWeight={600}>Suchradius</Typography>
       <Typography variant="body2" color="text.secondary">
-        Lege fest, in welchem Umkreis (m) um die gewählte Position analysiert werden soll.
+        Lege fest, in welchem Umkreis (km) um die gewählte Position analysiert werden soll.
       </Typography>
       <Box>
         <FormLabel sx={{ mb: 1, display: "block" }}>Aktueller Radius: {value} km</FormLabel>

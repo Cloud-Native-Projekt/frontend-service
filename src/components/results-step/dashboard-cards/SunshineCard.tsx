@@ -14,14 +14,16 @@ import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 import Remove from '@mui/icons-material/Remove';
 
+type SunshineStats = { min?: number; mean?: number; max?: number };
+type CloudStats = { mean?: number };
+
 export interface SunshineCardProps {
-  past: { sunshine?: number; cloud?: number };
-  future: { sunshine?: number; cloud?: number };
+  sunshine: { past: SunshineStats; future: SunshineStats };
+  clouds: { past: CloudStats; future: CloudStats };
 }
 
 // Helpers
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const ceilTo = (v: number, step: number) => Math.ceil(v / step) * step;
 
 // Convert provided sunshine to hours/day.
 // If input looks like seconds (weekly avg per day often > 48 secs), convert to hours; otherwise assume hours already.
@@ -127,9 +129,9 @@ const MetricWithClouds: React.FC<{ label: string; hours?: number; cloud?: number
   );
 };
 
-const SunshineCard: React.FC<SunshineCardProps> = ({ past, future }) => {
-  const pastH = toHoursPerDay(past.sunshine);
-  const futureH = toHoursPerDay(future.sunshine);
+const SunshineCard: React.FC<SunshineCardProps> = ({ sunshine, clouds }) => {
+  const pastH = toHoursPerDay(sunshine.past.mean);
+  const futureH = toHoursPerDay(sunshine.future.mean);
 
   const trend = (() => {
     if (typeof pastH !== 'number' || typeof futureH !== 'number') return { dir: 0, delta: 0 };
@@ -152,7 +154,7 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ past, future }) => {
           divider={<Divider orientation={isRow ? 'vertical' : 'horizontal'} flexItem />}
           sx={{ width: '100%', flexWrap: 'wrap' }}
         >
-          <MetricWithClouds label="Vergangenheit" hours={pastH} cloud={past.cloud} isRow={isRow} />
+          <MetricWithClouds label="Vergangenheit" hours={pastH} cloud={clouds.past.mean} isRow={isRow} />
 
           <Stack alignItems="center" spacing={0.25} sx={{ px: 1 }}>
             {trend.dir === 1 && <ArrowUpward sx={{ color: 'success.main', fontSize: 20 }} />}
@@ -162,7 +164,7 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ past, future }) => {
             <Typography variant="caption" color="text.secondary">mittlere Änderung</Typography>
           </Stack>
 
-          <MetricWithClouds label="Zukunft" hours={futureH} cloud={future.cloud} isRow={isRow} />
+          <MetricWithClouds label="Zukunft" hours={futureH} cloud={clouds.future.mean} isRow={isRow} />
         </Stack>
       </CardContent>
     </Card>

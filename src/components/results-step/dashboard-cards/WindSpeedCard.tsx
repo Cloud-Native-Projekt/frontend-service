@@ -166,6 +166,8 @@ const SpeedGauge: React.FC<GaugeProps> = React.memo(
   }
 );
 
+SpeedGauge.displayName = "SpeedGauge";
+
 const WindSpeedCard: React.FC<WindSpeedCardProps> = ({ past, future }) => {
   const vals = [
     past.min,

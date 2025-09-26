@@ -31,6 +31,7 @@ export interface AreaAssessment {
 
 export interface AllowanceRisksCardProps {
   data: AreaAssessment;
+  recommendation?: string;
 }
 
 type AssessmentLists = { notes: string[]; warnings: string[]; risks: string[]; verdict: 'allowed' | 'review' | 'not-allowed' };
@@ -169,7 +170,7 @@ const computeAssessment = (data: AreaAssessment): AssessmentLists => {
   return { notes, warnings, risks, verdict };
 };
 
-const AllowanceRisksCard: React.FC<AllowanceRisksCardProps> = ({ data }) => {
+const AllowanceRisksCard: React.FC<AllowanceRisksCardProps> = ({ data, recommendation }) => {
   const theme = useTheme();
   const { notes, warnings, risks, verdict } = computeAssessment(data);
 
@@ -185,6 +186,11 @@ const AllowanceRisksCard: React.FC<AllowanceRisksCardProps> = ({ data }) => {
       <CardContent sx={{ overflowY: 'auto' }}>
         <Stack spacing={2}>
           <Chip {...chipProps} sx={{ alignSelf: 'flex-start' }} />
+          {recommendation && (
+            <Typography variant="body2" color="text.secondary">
+              {recommendation}
+            </Typography>
+          )}
           {notes.length > 0 && (<Box>
             <Typography variant="subtitle2" color="text.secondary">Hinweise</Typography>
             <List dense>

@@ -11,9 +11,10 @@ import Tooltip from '@mui/material/Tooltip';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 
+
 export interface RainCardProps {
-  past: { precipitation_sum?: number; precipitation_hours?: number };
-  future: { precipitation_sum?: number; precipitation_hours?: number };
+  past: { weekSum: number; hoursPerWeek?: number };
+  future: { weekSum: number; hoursPerWeek?: number };
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -22,15 +23,20 @@ const DAY_HOURS = 24;
 const DAY_BANDS: [number, number, number, number] = [2, 6, 12, DAY_HOURS];
 
 const classifyHours = (theme: Theme, hoursPerDay?: number) => {
-  const v = typeof hoursPerDay === 'number' ? hoursPerDay : 0;
-  if (v <= DAY_BANDS[0]) return { label: 'Niedrig', color: theme.palette.success.main };
-  if (v <= DAY_BANDS[1]) return { label: 'Mittel', color: theme.palette.primary.main };
-  if (v <= DAY_BANDS[2]) return { label: 'Hoch', color: theme.palette.warning.main };
+  if (hoursPerDay == null || Number.isNaN(hoursPerDay)) {
+    return { label: 'Keine Daten', color: theme.palette.text.disabled };
+  }
+  if (hoursPerDay <= DAY_BANDS[0]) return { label: 'Niedrig', color: theme.palette.success.main };
+  if (hoursPerDay <= DAY_BANDS[1]) return { label: 'Mittel', color: theme.palette.primary.main };
+  if (hoursPerDay <= DAY_BANDS[2]) return { label: 'Hoch', color: theme.palette.warning.main };
   return { label: 'Sehr hoch', color: theme.palette.error.main };
 };
 
 const classifyIntensity = (theme: Theme, millimetersPerDay?: number, hoursPerDay?: number) => {
-  const rate = millimetersPerDay && hoursPerDay ? millimetersPerDay / Math.max(hoursPerDay, 0.0001) : 0;
+  if (millimetersPerDay == null || Number.isNaN(millimetersPerDay) || hoursPerDay == null || Number.isNaN(hoursPerDay)) {
+    return { label: 'Keine Daten', rate: 0, color: theme.palette.text.disabled };
+  }
+  const rate = millimetersPerDay / Math.max(hoursPerDay, 0.0001);
   if (rate <= 0.01) return { label: 'Kein Regen', rate, color: theme.palette.text.disabled };
   if (rate < 0.5) return { label: 'Nieselregen', rate, color: theme.palette.success.light };
   if (rate < 1) return { label: 'Leicht', rate, color: theme.palette.primary.light };
@@ -39,24 +45,26 @@ const classifyIntensity = (theme: Theme, millimetersPerDay?: number, hoursPerDay
   return { label: 'Starkregen', rate, color: theme.palette.error.main };
 };
 
-const Meter: React.FC<{ label: string; sum?: number; hours?: number }>
-  = ({ label, sum, hours }) => {
+const Meter: React.FC<{ label: string; weekSum: number; hoursPerWeek?: number }>
+  = ({ label, weekSum, hoursPerWeek }) => {
     const theme = useTheme();
-    // Convert weekly values to per-day
-    const mmPerDay = typeof sum === 'number' ? sum / 7 : undefined;
-    const hPerDay = typeof hours === 'number' ? hours / 7 : undefined;
+    const mmPerWeek = typeof weekSum === 'number' && !Number.isNaN(weekSum) ? weekSum : undefined;
+    const mmPerDay = mmPerWeek != null ? mmPerWeek / 7 : undefined;
+    const hPerWeek = typeof hoursPerWeek === 'number' && !Number.isNaN(hoursPerWeek) ? hoursPerWeek : undefined;
+    const hPerDay = hPerWeek != null ? hPerWeek / 7 : undefined;
     const domain = DAY_HOURS; // per-day window reference (hours)
     const bandStops = DAY_BANDS;
     const hoursClass = classifyHours(theme, hPerDay);
     const intensity = classifyIntensity(theme, mmPerDay, hPerDay);
-    const pct = clamp(((hPerDay ?? 0) / domain) * 100, 0, 100);
+    const pct = hPerDay == null ? 0 : clamp((hPerDay / domain) * 100, 0, 100);
     const bands = [
       { to: bandStops[0], color: alpha(theme.palette.success.main, 0.35) },
       { to: bandStops[1], color: alpha(theme.palette.primary.main, 0.35) },
       { to: bandStops[2], color: alpha(theme.palette.warning.main, 0.35) },
       { to: bandStops[3], color: alpha(theme.palette.error.main, 0.35) },
     ];
-    const tip = `Geschätzte O&M-Ausfallzeit pro Tag: ${hoursClass.label} (${hPerDay?.toFixed(1) ?? '—'} Std/Tag).\nRegenmuster: ${intensity.label} (${intensity.rate.toFixed(1)} mm/h) — ${intensity.rate < 1 ? 'Intermittierend' : intensity.rate >= 3 ? 'Konzentriert' : 'Gemischt'}.`;
+    const rateText = intensity.rate ? intensity.rate.toFixed(1) : '—';
+    const tip = `Geschätzte O&M-Ausfallzeit pro Tag: ${hoursClass.label}${hPerDay != null ? ` (${hPerDay.toFixed(1)} Std/Tag)` : ''}.\nRegenmuster: ${intensity.label}${intensity.rate ? ` (${rateText} mm/h)` : ''}.`;
     return (
       <Stack spacing={0.5} sx={{ width: '100%' }}>
         <Stack direction="row" spacing={1} alignItems="center">
@@ -75,7 +83,9 @@ const Meter: React.FC<{ label: string; sum?: number; hours?: number }>
               })}
             </Box>
 
-            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, bgcolor: alpha(hoursClass.color, 0.55) }} />
+            {hPerDay != null && (
+              <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${pct}%`, bgcolor: alpha(hoursClass.color, 0.55) }} />
+            )}
           </Box>
         </Tooltip>
       </Stack>
@@ -87,8 +97,8 @@ const RainCard: React.FC<RainCardProps> = ({ past, future }) => (
     <CardHeader title="Niederschlag" />
     <CardContent sx={{ p: 0 }}>
       <Stack spacing={1.25} sx={{ p: 2 }}>
-        <Meter label="Vergangenheit" sum={past.precipitation_sum} hours={past.precipitation_hours} />
-        <Meter label="Zukunft" sum={future.precipitation_sum} hours={future.precipitation_hours} />
+        <Meter label="Vergangenheit" weekSum={past.weekSum} hoursPerWeek={past.hoursPerWeek} />
+        <Meter label="Zukunft" weekSum={future.weekSum} hoursPerWeek={future.hoursPerWeek} />
       </Stack>
     </CardContent>
   </Card>
