@@ -25,7 +25,7 @@ COPY --from=builder /app/.next ./.next
 
 # Install only prod dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 EXPOSE 3000
 CMD ["npm", "start"]
