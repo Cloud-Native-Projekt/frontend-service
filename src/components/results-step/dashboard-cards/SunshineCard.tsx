@@ -25,15 +25,11 @@ export interface SunshineCardProps {
 // Helpers
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-// Convert provided sunshine to hours/day.
-// If input looks like seconds (weekly avg per day often > 48 secs), convert to hours; otherwise assume hours already.
 const toHoursPerDay = (v?: number): number | undefined => {
   if (v == null || Number.isNaN(v)) return undefined;
-  // Heuristic: values greater than 48 are likely seconds; convert seconds -> hours.
   return v > 48 ? v / 3600 : v;
 };
 
-// Color scale utilities: create a 10-step red→green palette using theme colors (error → warning → success → primary)
 const hexToRgb = (hex: string): [number, number, number] => {
   let s = hex.replace('#', '');
   if (s.length === 3) s = s.split('').map((c) => c + c).join('');
@@ -81,9 +77,9 @@ const MetricWithClouds: React.FC<{ label: string; hours?: number | null; cloud?:
   const scale = useSunshineScale();
   const color = hours ? valueToStageColor(hours, scale) : theme.palette.text.disabled;
   const cvg = clamp(Math.round(cloud ?? 0), 0, 100);
-  const bgOpacity = 0.06 + (cvg / 100) * 0.14; // subtle background hint
-  const fgOpacity = clamp((cvg - 60) / 40, 0, 1) * 0.5; // overlays number when high cloud
-  const cloudFill = alpha(theme.palette.text.primary, 0.18); // neutral md3-ish fill for clouds
+  const bgOpacity = 0.06 + (cvg / 100) * 0.14;
+  const fgOpacity = clamp((cvg - 60) / 40, 0, 1) * 0.5;
+  const cloudFill = alpha(theme.palette.text.primary, 0.18);
 
   return (
     <Stack alignItems="center" spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
@@ -106,7 +102,6 @@ const MetricWithClouds: React.FC<{ label: string; hours?: number | null; cloud?:
               color,
               textAlign: 'center',
               px: 1,
-              // gentle stroke for readability when overlapped by clouds
               textShadow: `${alpha(theme.palette.background.default, 0.9)} 0px 1px 1px`,
             }}
           >

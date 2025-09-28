@@ -1,6 +1,3 @@
-// Simplified high-precision Germany polygon (outer border) in [lat, lng].
-// For more accuracy import a full-resolution GeoJSON file server-side.
-
 export type LatLngTuple = [number, number];
 
 export const GERMANY_BBOX = {

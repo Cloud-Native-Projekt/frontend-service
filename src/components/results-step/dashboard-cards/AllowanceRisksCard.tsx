@@ -17,7 +17,6 @@ import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
-// ---- Types for assessment input ----
 export interface AreaAssessment {
   trees?: { present?: boolean; details?: string };
   buildings?: { within2km?: boolean; searchRadiusKm?: number };
