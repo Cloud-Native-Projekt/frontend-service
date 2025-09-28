@@ -1,6 +1,7 @@
 "use server";
 
 import { AnalysisData } from "@/types";
+import { readErrorResponse } from "@/actions/httpUtils";
 
 type WeatherCoordinates = {
   lat: number;
@@ -44,8 +45,8 @@ async function fetchWeeklyWeather(range: WeeklyRange, coords: WeatherCoordinates
   const response = await fetch(url, { method: "GET", cache: "no-store" });
   console.log("Weather service response status:", response.status);
   if (!response.ok) {
-    const message = await response;
-    throw new Error(`Weather service request failed (${response.status}): ${message}`);
+    const message = await readErrorResponse(response);
+    throw new Error(`Weather service request (${path}) failed (${response.status}): ${message}`);
   }
 
   const data = await response.json();

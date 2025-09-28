@@ -32,38 +32,38 @@ export interface AnalysisData {
   temperature: {
     past: PastFutureStats;
     future: PastFutureStats;
-  };
+  } | null;
   windSpeed: {
     past: PastFutureStats;
     future: PastFutureStats;
-  };
+  } | null;
   sunshineDuration: {
     past: PastFutureMean;
     future: PastFutureMean;
-  };
+  } | null;
   cloudCoverage: {
     past: PastFutureMean;
     future: PastFutureMean;
-  };
+  } | null;
   precipitation: {
     past: PastFuturePrecipitation;
     future: PastFuturePrecipitation;
-  };
+  } | null;
 
-  distanceToNearestDistributionCenter: number;
-  distanceToNearestPowerline: number;
+  distanceToNearestDistributionCenter: number | null;
+  distanceToNearestPowerline: number | null;
 
   protectedArea: {
     inProtectedArea: boolean;
     designation?: string; // optional additional information
-  };
+  } | null;
 
   forest: {
     inForest: boolean;
     type?: string; // optional additional information
-  };
+  } | null;
 
   building: {
     inPopulatedArea: boolean;
-  };
+  } | null;
 }

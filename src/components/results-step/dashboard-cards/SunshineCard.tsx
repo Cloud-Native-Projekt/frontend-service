@@ -18,8 +18,8 @@ type SunshineStats = { min?: number; mean?: number; max?: number };
 type CloudStats = { mean?: number };
 
 export interface SunshineCardProps {
-  sunshine: { past: SunshineStats; future: SunshineStats };
-  clouds: { past: CloudStats; future: CloudStats };
+  sunshine: { past: SunshineStats; future: SunshineStats } | null;
+  clouds: { past: CloudStats; future: CloudStats } | null;
 }
 
 // Helpers
@@ -76,10 +76,10 @@ const Cloud = ({ x, y, s, opacity, fill }: { x: number; y: number; s: number; op
   </g>
 );
 
-const MetricWithClouds: React.FC<{ label: string; hours?: number; cloud?: number; isRow: boolean }> = ({ label, hours, cloud, isRow }) => {
+const MetricWithClouds: React.FC<{ label: string; hours?: number | null; cloud?: number | null; isRow: boolean }> = ({ label, hours, cloud, isRow }) => {
   const theme = useTheme();
   const scale = useSunshineScale();
-  const color = valueToStageColor(hours, scale) ?? theme.palette.text.disabled;
+  const color = hours ? valueToStageColor(hours, scale) : theme.palette.text.disabled;
   const cvg = clamp(Math.round(cloud ?? 0), 0, 100);
   const bgOpacity = 0.06 + (cvg / 100) * 0.14; // subtle background hint
   const fgOpacity = clamp((cvg - 60) / 40, 0, 1) * 0.5; // overlays number when high cloud
@@ -130,8 +130,8 @@ const MetricWithClouds: React.FC<{ label: string; hours?: number; cloud?: number
 };
 
 const SunshineCard: React.FC<SunshineCardProps> = ({ sunshine, clouds }) => {
-  const pastH = toHoursPerDay(sunshine.past.mean);
-  const futureH = toHoursPerDay(sunshine.future.mean);
+  const pastH = sunshine ? toHoursPerDay(sunshine.past.mean) : null;
+  const futureH = sunshine ? toHoursPerDay(sunshine.future.mean) : null;
 
   const trend = (() => {
     if (typeof pastH !== 'number' || typeof futureH !== 'number') return { dir: 0, delta: 0 };
@@ -154,7 +154,7 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ sunshine, clouds }) => {
           divider={<Divider orientation={isRow ? 'vertical' : 'horizontal'} flexItem />}
           sx={{ width: '100%', flexWrap: 'wrap' }}
         >
-          <MetricWithClouds label="Vergangenheit" hours={pastH} cloud={clouds.past.mean} isRow={isRow} />
+          <MetricWithClouds label="Vergangenheit" hours={pastH} cloud={clouds ? clouds.past.mean : null} isRow={isRow} />
 
           <Stack alignItems="center" spacing={0.25} sx={{ px: 1 }}>
             {trend.dir === 1 && <ArrowUpward sx={{ color: 'success.main', fontSize: 20 }} />}
@@ -164,7 +164,7 @@ const SunshineCard: React.FC<SunshineCardProps> = ({ sunshine, clouds }) => {
             <Typography variant="caption" color="text.secondary">mittlere Änderung</Typography>
           </Stack>
 
-          <MetricWithClouds label="Zukunft" hours={futureH} cloud={clouds.future.mean} isRow={isRow} />
+          <MetricWithClouds label="Zukunft" hours={futureH} cloud={clouds ? clouds.future.mean : null} isRow={isRow} />
         </Stack>
       </CardContent>
     </Card>

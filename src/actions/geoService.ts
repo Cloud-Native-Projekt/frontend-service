@@ -1,6 +1,7 @@
 "use server";
 
 import { AnalysisData } from "@/types";
+import { readErrorResponse } from "@/actions/httpUtils";
 
 type GeoCoordinates = {
   lat: number;
@@ -61,27 +62,11 @@ async function fetchGeoEndpoint<T>(path: string, searchParams?: Record<string, s
   const response = await fetch(url, { method: "GET", cache: "no-store" });
   console.log("Geo service response status:", response.status);
   if (!response.ok) {
-    const message = await safeReadError(response);
+    const message = await readErrorResponse(response);
     throw new Error(`Geo service request (${path}) failed (${response.status}): ${message}`);
   }
 
   return response.json() as Promise<T>;
-}
-
-async function safeReadError(response: Response): Promise<string> {
-  try {
-    const data = await response.clone().json();
-    if (typeof data === "object" && data && "detail" in data) {
-      return JSON.stringify(data.detail);
-    }
-    return JSON.stringify(data);
-  } catch {
-    try {
-      return await response.clone().text();
-    } catch {
-      return "<unreadable>";
-    }
-  }
 }
 
 export async function fetchGeoHealth(): Promise<GeoHealthResponse> {

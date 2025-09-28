@@ -4,7 +4,7 @@ function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
 
-function finiteOrUndefined(value?: number): number | undefined {
+function finiteOrUndefined(value?: number | null): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
@@ -15,14 +15,22 @@ export interface ScoreOutput {
 }
 
 export function calculateScores(analysis?: AnalysisData | null, config?: ProjectConfig): ScoreOutput {
-  const windPast = analysis?.windSpeed.past;
-  const windFuture = analysis?.windSpeed.future;
-  const sunPast = analysis?.sunshineDuration.past;
-  const sunFuture = analysis?.sunshineDuration.future;
-  const cloudPast = analysis?.cloudCoverage.past;
-  const cloudFuture = analysis?.cloudCoverage.future;
-  const precipPast = analysis?.precipitation.past;
-  const precipFuture = analysis?.precipitation.future;
+  if (!analysis) {
+    return {
+      solar: 0,
+      wind: 0,
+      recommendation: "Keine Analysedaten verfügbar. Bitte Standort erneut prüfen.",
+    };
+  }
+
+  const windPast = analysis.windSpeed?.past;
+  const windFuture = analysis.windSpeed?.future;
+  const sunPast = analysis.sunshineDuration?.past;
+  const sunFuture = analysis.sunshineDuration?.future;
+  const cloudPast = analysis.cloudCoverage?.past;
+  const cloudFuture = analysis.cloudCoverage?.future;
+  const precipPast = analysis.precipitation?.past;
+  const precipFuture = analysis.precipitation?.future;
 
   const hubHeight = typeof config?.hubHeight === "number" && !Number.isNaN(config.hubHeight) ? config.hubHeight : undefined;
 
@@ -62,7 +70,7 @@ export function calculateScores(analysis?: AnalysisData | null, config?: Project
   const windValues = [windComponent(windPast), windComponent(windFuture)];
   let windRaw = windValues.reduce((a, b) => a + b, 0) / windValues.length;
 
-  const inPopulatedArea = analysis?.building.inPopulatedArea;
+  const inPopulatedArea = analysis.building?.inPopulatedArea;
   if (inPopulatedArea === true) {
     windRaw -= 5;
   }
@@ -71,8 +79,8 @@ export function calculateScores(analysis?: AnalysisData | null, config?: Project
   const solar = Math.round(solarRaw);
   const wind = Math.round(windRaw);
 
-  const powerlineMeters = finiteOrUndefined(analysis?.distanceToNearestPowerline);
-  const substationMeters = finiteOrUndefined(analysis?.distanceToNearestDistributionCenter);
+  const powerlineMeters = finiteOrUndefined(analysis.distanceToNearestPowerline);
+  const substationMeters = finiteOrUndefined(analysis.distanceToNearestDistributionCenter);
   const linesKm = powerlineMeters != null ? powerlineMeters / 1000 : undefined;
   const subKm = substationMeters != null ? substationMeters / 1000 : undefined;
 
@@ -85,7 +93,7 @@ export function calculateScores(analysis?: AnalysisData | null, config?: Project
     return undefined;
   })();
 
-  const protectedNote = analysis?.protectedArea.inProtectedArea
+  const protectedNote = analysis.protectedArea?.inProtectedArea
     ? "Gebiet überschneidet Schutzflächen; Genehmigungsrisiken erwartet."
     : undefined;
 
