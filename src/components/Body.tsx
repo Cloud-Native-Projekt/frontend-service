@@ -22,6 +22,8 @@ export default function Body() {
   const runAnalysis = React.useCallback(async () => {
     if (!location) return;
     setErrorMessage(null);
+    setActiveStep(1);
+    setAnalysisResult(null);
     setLoading(true);
     const config = toConfig();
     setLastConfig(config);
@@ -29,12 +31,12 @@ export default function Body() {
       const result = await analyzeCoordinates({ location, config });
       setAnalysisResult(result);
       setErrorMessage(null);
-      setActiveStep(1);
     }
     catch (error) {
       console.error("Error during analysis:", error);
       setAnalysisResult(null);
       setErrorMessage("Leider ist ein Fehler aufgetreten. Bitte versuchen Sie es in Kürze erneut.");
+      setActiveStep(0);
     }
     finally {
       setLoading(false);
@@ -103,6 +105,7 @@ export default function Body() {
           location={location}
           config={lastConfig}
           onResetStepper={resetToSelection}
+          loading={loading}
         />
       )}
     </Box>

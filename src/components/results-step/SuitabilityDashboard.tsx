@@ -14,6 +14,7 @@ import AllowanceRisksCard from "@/components/results-step/dashboard-cards/Allowa
 import RainCard, { RainCardProps } from "@/components/results-step/dashboard-cards/RainCard";
 import ScoresCard from "@/components/results-step/dashboard-cards/ScoresCard";
 import { calculateScores } from "@/actions/calculateScores";
+import SuitabilityDashboardSkeleton from "@/components/results-step/SuitabilityDashboardSkeleton";
 
 const avg = (...vals: Array<number | undefined>) => {
   const filtered = vals.filter((v): v is number => typeof v === "number" && !Number.isNaN(v));
@@ -35,9 +36,14 @@ export interface SuitabilityDashboardProps {
   location: Location | null;
   config?: ProjectConfig | null;
   resetStepper?: () => void;
+  isLoading?: boolean;
 }
 
-const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, location, config, resetStepper }) => {
+const SuitabilityDashboard: React.FC<SuitabilityDashboardProps> = ({ result, location, config, resetStepper, isLoading }) => {
+  if (isLoading) {
+    return <SuitabilityDashboardSkeleton />;
+  }
+
   if (!result) {
     return (
       <Box

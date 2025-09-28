@@ -8,6 +8,7 @@ interface Props {
   location: Location | null;
   config?: ProjectConfig | null;
   onResetStepper?: () => void;
+  loading?: boolean;
 }
 
 export function ResultsStep(props: Props) {
@@ -17,6 +18,7 @@ export function ResultsStep(props: Props) {
       location={props.location}
       config={props.config}
       resetStepper={props.onResetStepper}
+      isLoading={props.loading}
     />
   );
 }
