@@ -36,7 +36,6 @@ export default function Body() {
       console.error("Error during analysis:", error);
       setAnalysisResult(null);
       setErrorMessage("Leider ist ein Fehler aufgetreten. Bitte versuchen Sie es in Kürze erneut.");
-      setActiveStep(0);
     }
     finally {
       setLoading(false);
